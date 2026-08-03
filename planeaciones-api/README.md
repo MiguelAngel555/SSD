@@ -1,58 +1,142 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# planeaciones-api (Backend)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API REST del sistema SSD, construida con **Laravel 13** sobre **PHP 8.3**. Expone toda la lógica de negocio: autenticación, gestión académica (carreras, especialidades, asignaturas, usuarios) y el flujo completo de secuencias didácticas (creación, revisión, validación).
 
-## About Laravel
+## Stack y dependencias clave
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+| Paquete | Uso |
+|---|---|
+| `laravel/framework` ^13.8 | Framework base |
+| `laravel/sanctum` | Autenticación por token (SPA/API) |
+| `pragmarx/google2fa` + `google2fa-laravel` | Autenticación en dos pasos (2FA) |
+| `kreait/laravel-firebase` | Integración con Firebase |
+| `darkaonline/l5-swagger` | Documentación OpenAPI/Swagger de la API |
+| `simplesoftwareio/simple-qrcode` | Generación de QR (probablemente para 2FA) |
+| `smalot/pdfparser` | Lectura/parseo de PDFs |
+| `laravel/pint`, `phpunit`, `mockery`, `fakerphp/faker` | Calidad de código y pruebas (dev) |
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Base de datos por defecto: **SQLite** (`DB_CONNECTION=sqlite` en `.env.example`), fácilmente cambiable a MySQL/PostgreSQL.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Requisitos
 
-## Learning Laravel
+- PHP ^8.3 con las extensiones habituales de Laravel
+- Composer
+- Node.js + npm (solo para compilar assets con Vite/Tailwind, no es el frontend principal de la app)
+- SQLite (o el motor de BD que configures)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Instalación
 
 ```bash
-composer require laravel/boost --dev
+cd planeaciones-api
+composer install
+cp .env.example .env
+php artisan key:generate
 
-php artisan boost:install
+# si usas sqlite (por defecto) crea el archivo de base de datos:
+touch database/database.sqlite
+
+php artisan migrate --seed
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+El comando `composer setup` automatiza gran parte de esto (install, copiar `.env`, generar key, migrar, instalar/compilar assets npm).
 
-## Contributing
+## Ejecución en desarrollo
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+composer dev
+```
 
-## Code of Conduct
+Este script (`composer.json`) levanta en paralelo, vía `concurrently`:
+- `php artisan serve` — servidor de la API
+- `php artisan queue:listen` — worker de colas
+- `php artisan pail` — logs en tiempo real
+- `npm run dev` — Vite (assets internos del backend, p. ej. vistas de correo)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+O de forma manual solo la API:
 
-## Security Vulnerabilities
+```bash
+php artisan serve
+# API disponible en http://localhost:8000
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Autenticación y roles
 
-## License
+- Autenticación basada en **Sanctum** (tokens Bearer).
+- Middleware propio `EnsureUserHasRole` (`role:NombreDelRol`) protege rutas por rol; acepta múltiples roles: `role:Administrador,Director`.
+- Soporta **2FA** (activar/confirmar/deshabilitar, verificación y reenvío de código en el login).
+- Flujo de **confirmación de cuenta** por correo al crear un usuario, y **recuperación de contraseña**.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Roles usados en las rutas: `Administrador`, `Docente`, `Revisor`, `Director` (y `Secretario` a nivel de dominio/frontend).
+
+## Estructura de endpoints (`routes/api.php`)
+
+**Públicas**
+- `POST /login`, `POST /forgot-password`, `POST /reset-password`
+- `POST /2fa/verify`, `POST /2fa/resend`
+- `POST /confirmar-cuenta`
+
+**Protegidas (`auth:sanctum`)**
+- `POST /logout`, `GET /me`
+- `POST /2fa/enable|confirm|disable`
+
+**Admin** (`role:Administrador`, prefijo `/admin`)
+- CRUD de `carreras`, `especialidades`, `asignaturas`, `usuarios` (+ catálogos, toggle-activo, vinculaciones, alta masiva de asignaturas, reenvío de credenciales)
+
+**Secuencias didácticas**
+- Compartido: `GET /secuencias/catalogos`, `GET /secuencias/{secuencia}`
+- **Docente** (prefijo `/docente`): crear/duplicar secuencia, enviar/cancelar revisión, carátula, grupos de autores, unidades, temas, evaluaciones, evidencias, actividades por fase, referencias (CRUD completo de cada submódulo).
+- **Revisor** (prefijo `/revisor`): cola de revisión, enviar a validación, rechazar, actualizar validación de un elemento.
+- **Director** (prefijo `/director`): cola de secuencias, resumen, validar/rechazar definitivamente.
+
+## Modelo de datos (resumen)
+
+35 migraciones definen el esquema, entre ellas:
+- **Identidad/roles**: `users`, `roles`, `role_user`, `two_factor_challenges`, `two_factor_codes`, `confirmaciones_cuenta`, `personal_access_tokens`
+- **Académico**: `carreras`, `especialidades`, `asignaturas`, `asignatura_especialidad`, `docente_asignatura`, `cuatrimestres`
+- **Secuencias**: `secuencias`, `secuencia_user`, `secuencia_caratulas`, `secuencia_unidades`, `secuencia_unidad_temas`, `secuencia_unidad_evaluaciones`, `secuencia_unidad_evidencias`, `evidencia_tipo_evaluacion`, `secuencia_unidad_fases`, `secuencia_fase_actividades`, `secuencia_referencias`, `secuencia_grupos`, `secuencia_comentarios`, `secuencia_historial_estados`, `revisiones`, `tipos_evaluacion`
+
+Modelos Eloquent equivalentes en `app/Models/`.
+
+## Estructura de carpetas relevante
+
+```
+app/
+├── Exceptions/                          # Excepciones de dominio (p. ej. PlanEstudioInvalidoException)
+├── Http/Controllers/Api/
+│   ├── AuthController.php
+│   ├── TwoFactorController.php
+│   ├── Asignatura/AsignaturaController.php
+│   ├── Carreras/CarreraController.php, EspecialidadController.php
+│   ├── Usuario/UserController.php, ConfirmacionCuentaController.php
+│   └── Secuencias/                      # Controladores del flujo de secuencias
+│       ├── SecuenciaController.php
+│       ├── SecuenciaCaratulaController.php
+│       ├── SecuenciaUnidadController.php
+│       ├── SecuenciaUnidadTemaController.php
+│       ├── SecuenciaUnidadEvaluacionController.php
+│       ├── SecuenciaUnidadEvidenciaController.php
+│       ├── SecuenciaFaseActividadController.php
+│       ├── SecuenciaReferenciaController.php
+│       └── RevisionController.php
+├── Http/Middleware/EnsureUserHasRole.php
+└── Models/                              # Un modelo Eloquent por tabla de dominio
+database/
+├── migrations/                          # Esquema completo (35 archivos)
+└── seeders/                             # DatabaseSeeder, CuatrimestreSeeder, UserSeeder
+routes/api.php                           # Todas las rutas de la API
+```
+
+## Pruebas
+
+```bash
+composer test
+```
+(limpia config y ejecuta `php artisan test`, sobre PHPUnit)
+
+## Documentación de la API
+
+El paquete `l5-swagger` está instalado; una vez configurado, la documentación Swagger/OpenAPI suele quedar disponible en una ruta como `/api/documentation` (revisar `config/l5-swagger.php` y generar con `php artisan l5-swagger:generate`).
+
+## Variables de entorno relevantes
+
+Además de las típicas de Laravel (`APP_*`, `DB_*`, `MAIL_*`), revisa `.env.example` para: sesión, colas (`QUEUE_CONNECTION=database`), caché, AWS (si se usa almacenamiento externo) y credenciales de Firebase (no incluidas en `.env.example`, deben añadirse según `kreait/laravel-firebase`).
