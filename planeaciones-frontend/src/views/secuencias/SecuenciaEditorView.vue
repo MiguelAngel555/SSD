@@ -310,7 +310,14 @@
                 <tbody>
                   <tr v-if="actividadesDeFase(unidad, tipoFase).length === 0"><td colspan="7" class="val" style="text-align:center;color:#bbb;font-style:italic">Sin estrategias registradas.</td></tr>
                   <tr v-for="act in actividadesDeFase(unidad, tipoFase)" :key="act.id">
-                    <td class="val"><textarea class="fase-cell" v-model="act.metodos_tecnicas" :disabled="!puedeEditarUnidad(unidad)" @blur="guardarActividad(act, 'metodos_tecnicas')"></textarea></td>
+                    <td class="val" style="padding:5px">
+                      <select class="eval-select" v-model="act.metodos_tecnicas" :disabled="!puedeEditarUnidad(unidad)" @change="guardarActividad(act, 'metodos_tecnicas')">
+                        <option :value="null">— Seleccionar —</option>
+                        <option v-for="(estrategia, idx) in ESTRATEGIAS_POR_FASE[tipoFase]" :key="estrategia" :value="estrategia">
+                          {{ idx + 1 }}) {{ estrategia }}
+                        </option>
+                      </select>
+                    </td>
                     <td class="val"><textarea class="fase-cell" v-model="act.actividades_docente" :disabled="!puedeEditarUnidad(unidad)" @blur="guardarActividad(act, 'actividades_docente')"></textarea></td>
                     <td class="val"><textarea class="fase-cell" v-model="act.actividades_estudiante" :disabled="!puedeEditarUnidad(unidad)" @blur="guardarActividad(act, 'actividades_estudiante')"></textarea></td>
                     <td class="val"><textarea class="fase-cell" v-model="act.evidencia_aprendizaje" :disabled="!puedeEditarUnidad(unidad)" @blur="guardarActividad(act, 'evidencia_aprendizaje')"></textarea></td>
@@ -426,6 +433,7 @@ import {
 } from 'lucide-vue-next'
 import '@/assets/secuencia-documento.css'
 import { INSTRUCCIONES } from '@/config/instrucciones'
+import { ESTRATEGIAS_POR_FASE } from '@/config/estrategias'
 import InfoTooltip from '@/components/InfoTooltip.vue'
 import DocHeader from '@/components/DocHeader.vue'
 import ValidacionElemento from '@/components/ValidacionElemento.vue'

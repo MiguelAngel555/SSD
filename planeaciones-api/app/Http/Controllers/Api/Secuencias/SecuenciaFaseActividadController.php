@@ -6,8 +6,10 @@ use App\Http\Controllers\Api\Concerns\VerificaEdicionSecuencia;
 use App\Http\Controllers\Controller;
 use App\Models\SecuenciaFaseActividad;
 use App\Models\SecuenciaUnidad;
+use App\Support\EstrategiasCatalogo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -43,8 +45,11 @@ class SecuenciaFaseActividadController extends Controller
             return response()->json($actividad, 201);
         } catch (Throwable $e) {
             Log::error('SecuenciaFaseActividadController@store: error al crear la actividad', [
-                'unidad_id' => $unidad->id, 'tipo' => $tipo,
-                'mensaje' => $e->getMessage(), 'linea' => $e->getLine(), 'archivo' => $e->getFile(),
+                'unidad_id' => $unidad->id,
+                'tipo' => $tipo,
+                'mensaje' => $e->getMessage(),
+                'linea' => $e->getLine(),
+                'archivo' => $e->getFile(),
             ]);
 
             return response()->json(['message' => 'No se pudo crear la actividad.'], 500);
@@ -60,7 +65,7 @@ class SecuenciaFaseActividadController extends Controller
             $this->autorizarEdicion($actividad->fase->unidad->secuencia, $request->user());
 
             $data = $request->validate([
-                'metodos_tecnicas' => ['sometimes', 'string'],
+                'metodos_tecnicas' => ['sometimes', 'nullable', Rule::in(EstrategiasCatalogo::porFase($actividad->fase->fase))],
                 'actividades_docente' => ['sometimes', 'string'],
                 'actividades_estudiante' => ['sometimes', 'string'],
                 'evidencia_aprendizaje' => ['sometimes', 'nullable', 'string'],
@@ -75,7 +80,9 @@ class SecuenciaFaseActividadController extends Controller
         } catch (Throwable $e) {
             Log::error('SecuenciaFaseActividadController@update: error al actualizar la actividad', [
                 'actividad_id' => $actividad->id,
-                'mensaje' => $e->getMessage(), 'linea' => $e->getLine(), 'archivo' => $e->getFile(),
+                'mensaje' => $e->getMessage(),
+                'linea' => $e->getLine(),
+                'archivo' => $e->getFile(),
             ]);
 
             return response()->json(['message' => 'No se pudo actualizar la actividad.'], 500);
@@ -95,7 +102,9 @@ class SecuenciaFaseActividadController extends Controller
         } catch (Throwable $e) {
             Log::error('SecuenciaFaseActividadController@destroy: error al eliminar la actividad', [
                 'actividad_id' => $actividad->id,
-                'mensaje' => $e->getMessage(), 'linea' => $e->getLine(), 'archivo' => $e->getFile(),
+                'mensaje' => $e->getMessage(),
+                'linea' => $e->getLine(),
+                'archivo' => $e->getFile(),
             ]);
 
             return response()->json(['message' => 'No se pudo eliminar la actividad.'], 500);
