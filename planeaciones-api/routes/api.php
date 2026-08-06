@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\Secuencias\SecuenciaUnidadTemaController;
 use App\Http\Controllers\Api\TwoFactorController;
 use App\Http\Controllers\Api\Usuario\ConfirmacionCuentaController;
 use App\Http\Controllers\Api\Usuario\UserController;
+use App\Http\Controllers\Api\DeviceTokenController;
 use Illuminate\Support\Facades\Route;
 
 // ── Rutas públicas ──
@@ -34,6 +35,9 @@ Route::post('/confirmar-cuenta', [ConfirmacionCuentaController::class, 'confirma
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+
+    Route::post('/dispositivo/fcm-token', [DeviceTokenController::class, 'store']);
+    Route::delete('/dispositivo/fcm-token', [DeviceTokenController::class, 'destroy']);
 
     // Configuración de 2FA por el propio usuario
     Route::post('/2fa/enable', [TwoFactorController::class, 'enable']);

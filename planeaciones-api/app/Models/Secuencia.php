@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\SecuenciaCambioEstadoNotification;
 
 class Secuencia extends Model
 {
@@ -97,6 +99,8 @@ class Secuencia extends Model
     // Cambia de estado dejando rastro en el historial
     public function cambiarEstado(string $nuevoEstado, User $usuario, ?string $comentario = null): void
     {
+        $estadoAnterior = $this->estado;
+
         $this->historialEstados()->create([
             'estado_anterior' => $this->estado,
             'estado_nuevo' => $nuevoEstado,
@@ -105,5 +109,9 @@ class Secuencia extends Model
         ]);
 
         $this->update(['estado' => $nuevoEstado]);
+
+        $destinatarios = $this->autores()->get();
+
+        Notification::send($destinatarios, new SecuenciaCambioEstadoNotification($this, $estadoAnterior));
     }
 }
