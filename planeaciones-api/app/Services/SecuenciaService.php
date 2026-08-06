@@ -105,6 +105,7 @@ class SecuenciaService
             'horas_semana' => $dg['horas_semana'] ?? 0,
         ]);
 
+        //porcentaje de la unidad se calcula las horas totales de la caratula entre las horas totales de la unidad
         foreach ($datosPdf['unidades_aprendizaje'] ?? [] as $i => $u) {
             $unidad = $secuencia->unidades()->create([
                 'numero' => $i + 1,
@@ -113,7 +114,7 @@ class SecuenciaService
                 'horas_saber' => $u['tiempo_asignado']['horas_saber'] ?? 0,
                 'horas_saber_hacer' => $u['tiempo_asignado']['horas_hacer'] ?? 0,
                 'horas_totales' => $u['tiempo_asignado']['horas_totales'] ?? 0,
-                'porcentaje_unidad' => 0,
+                'porcentaje_unidad' => ($dg['horas_totales'] ?? 0) > 0 ? round((($u['tiempo_asignado']['horas_totales'] ?? 0) / ($dg['horas_totales'] ?? 1)) * 100, 2) : 0,
             ]);
 
             foreach ($u['temas'] ?? [] as $orden => $t) {
@@ -126,8 +127,9 @@ class SecuenciaService
                 ]);
             }
 
+            // periodo semana se obtiene de horas totales de la unidad entre las horas semanales de la caratula, redondeando hacia arriba
             $unidad->evaluacion()->create([
-                'periodo_semanas' => 1,
+                'periodo_semanas' => ($dg['horas_semana'] ?? 0) > 0 ? ceil(($u['tiempo_asignado']['horas_totales'] ?? 0) / ($dg['horas_semana'] ?? 1)) : 0,
                 'resultado_aprendizaje' => $u['proceso_evaluacion']['resultado_aprendizaje'] ?? '',
             ]);
 

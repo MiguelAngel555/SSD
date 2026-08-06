@@ -26,7 +26,12 @@
               <td>{{ s.periodo }}</td>
               <td><span v-for="g in s.grupos" :key="g.id" class="badge b-azul" style="margin-right:4px">{{ g.grupo }}</span></td>
               <td><span :class="['badge', badgeEstado(s.estado)]">{{ etiquetaEstado(s.estado) }}</span></td>
-              <td><IconButton title="Abrir" @click="abrirEditor(s.id)"><ArrowRight :size="16" /></IconButton></td>
+              <td>
+                <div class="flex ic g2u">
+                  <IconButton title="Abrir" @click="abrirEditor(s.id)"><ArrowRight :size="16" /></IconButton>
+                  <IconButton title="Eliminar" variant="danger" :disabled="eliminandoId === s.id" @click="eliminar(s)"><Trash2 :size="16" /></IconButton>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -39,7 +44,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Plus, ArrowRight } from 'lucide-vue-next'
+import { Plus, ArrowRight, Trash2 } from 'lucide-vue-next'
 import IconButton from '@/components/IconButton.vue'
 import NuevaSecuenciaModal from '@/views/secuencias/NuevaSecuenciaModal.vue'
 import api from '@/services/api'
@@ -50,6 +55,7 @@ const cargando = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
 const modalCrearAbierto = ref(false)
+const eliminandoId = ref(null)
 
 onMounted(cargar)
 
@@ -67,6 +73,21 @@ async function cargar() {
 
 function abrirEditor(id) {
   router.push({ name: 'secuencia-editor', params: { id } })
+}
+
+async function eliminar(secuencia) {
+  if (!confirm(`¿Eliminar la secuencia de "${secuencia.asignatura?.nombre}" (${secuencia.periodo})? Esta acción no se puede deshacer.`)) return
+  eliminandoId.value = secuencia.id
+  errorMsg.value = ''
+  try {
+    await api.delete(`/docente/secuencias/${secuencia.id}`)
+    successMsg.value = 'Secuencia eliminada.'
+    await cargar()
+  } catch (e) {
+    errorMsg.value = e.response?.data?.message || 'No se pudo eliminar la secuencia.'
+  } finally {
+    eliminandoId.value = null
+  }
 }
 
 function onSecuenciaCreada(secuencia) {

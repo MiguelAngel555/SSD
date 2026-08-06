@@ -16,45 +16,6 @@ class SecuenciaUnidadController extends Controller
     use VerificaEdicionSecuencia;
 
     /**
-     * POST /api/docente/secuencias/{secuencia}/unidades
-     * Agregar una unidad manualmente (caso sin PDF, o para ampliar la secuencia).
-     */
-    public function store(Request $request, Secuencia $secuencia)
-    {
-        try {
-            $this->autorizarEdicion($secuencia, $request->user());
-
-            $siguienteNumero = $secuencia->unidades()->max('numero') + 1;
-
-            $unidad = $secuencia->unidades()->create([
-                'numero' => $siguienteNumero,
-                'nombre' => "Unidad {$siguienteNumero}",
-                'proposito_esperado' => '',
-                'horas_saber' => 0,
-                'horas_saber_hacer' => 0,
-                'horas_totales' => 0,
-                'porcentaje_unidad' => 0,
-            ]);
-
-            $unidad->evaluacion()->create(['periodo_semanas' => 1, 'resultado_aprendizaje' => '']);
-            foreach (['apertura', 'desarrollo', 'cierre'] as $fase) {
-                $unidad->fases()->create(['fase' => $fase]);
-            }
-
-            return response()->json($unidad->fresh(['temas', 'evaluacion', 'evidencias', 'fases.actividades']), 201);
-        } catch (Throwable $e) {
-            Log::error('SecuenciaUnidadController@store: error al crear la unidad', [
-                'secuencia_id' => $secuencia->id,
-                'mensaje' => $e->getMessage(),
-                'linea' => $e->getLine(),
-                'archivo' => $e->getFile(),
-            ]);
-
-            return response()->json(['message' => 'No se pudo crear la unidad.'], 500);
-        }
-    }
-
-    /**
      * PATCH /api/docente/unidades/{unidad}
      */
     public function update(Request $request, SecuenciaUnidad $unidad)

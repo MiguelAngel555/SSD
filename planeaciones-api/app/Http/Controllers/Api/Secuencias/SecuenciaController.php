@@ -17,7 +17,6 @@ use Throwable;
 class SecuenciaController extends Controller
 {
     private const RELACIONES_COMPLETAS = [
-        'asignatura',
         'asignatura.cuatrimestre',
         'especialidad',
         'carrera',
@@ -70,6 +69,16 @@ class SecuenciaController extends Controller
     public function colaRevisor(Request $request)
     {
         try {
+
+            /* Cambiar todas las secuencias rechazadas a en revision */
+
+            $secuenciasRechazadas = Secuencia::where('estado', 'rechazada')->get();
+            if ($secuenciasRechazadas->isNotEmpty()) {
+                foreach ($secuenciasRechazadas as $secuencia) {
+                    $this->cambiarEstado($request, $secuencia, 'rechazada', 'en_revision');
+                }
+            }
+
             $secuencias = Secuencia::query()
                 ->with(['asignatura', 'especialidad', 'carrera', 'autores'])
                 ->where('estado', 'en_revision')
@@ -300,6 +309,38 @@ class SecuenciaController extends Controller
             ]);
 
             return response()->json(['message' => 'No se pudo cargar el resumen.'], 500);
+        }
+    }
+
+    /**
+     * DELETE /api/docente/secuencias/{secuencia}
+     * Solo el autor puede eliminarla, y solo mientras esté en borrador.
+     */
+    public function destroy(Request $request, Secuencia $secuencia)
+    {
+        try {
+            $usuario = $request->user();
+            $esAutor = $secuencia->autores()->where('users.id', $usuario->id)->exists();
+
+            if (! $esAutor || $secuencia->estado !== 'borrador') {
+                return response()->json(['message' => 'Esta secuencia ya no se puede eliminar (no eres autor o ya no está en borrador).'], 403);
+            }
+
+            // Borrado suave (soft delete): solo se marca deleted_at, no se
+            // toca ningún registro relacionado (unidades, temas, etc. se
+            // quedan intactos y la secuencia se puede recuperar si hace falta).
+            $secuencia->delete();
+
+            return response()->json(['message' => 'Secuencia eliminada.']);
+        } catch (Throwable $e) {
+            Log::error('SecuenciaController@destroy: error al eliminar la secuencia', [
+                'secuencia_id' => $secuencia->id,
+                'mensaje' => $e->getMessage(),
+                'linea' => $e->getLine(),
+                'archivo' => $e->getFile(),
+            ]);
+
+            return response()->json(['message' => 'No se pudo eliminar la secuencia.'], 500);
         }
     }
 

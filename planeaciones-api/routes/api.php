@@ -73,6 +73,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:Docente')->prefix('docente')->group(function () {
         Route::get('/secuencias', [SecuenciaController::class, 'misSecuencias']);
         Route::post('/secuencias', [SecuenciaController::class, 'store']);
+        Route::delete('/secuencias/{secuencia}', [SecuenciaController::class, 'destroy']);
         Route::post('/secuencias/{secuencia}/duplicar', [SecuenciaController::class, 'duplicar']);
         Route::post('/secuencias/{secuencia}/enviar-revision', [SecuenciaController::class, 'enviarRevision']);
         Route::post('/secuencias/{secuencia}/cancelar-envio', [SecuenciaController::class, 'cancelarEnvio']);
@@ -80,7 +81,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/secuencias/{secuencia}/caratula', [SecuenciaCaratulaController::class, 'update']);
         Route::patch('/secuencias/{secuencia}/grupos-autores', [SecuenciaCaratulaController::class, 'actualizarGruposAutores']);
 
-        Route::post('/secuencias/{secuencia}/unidades', [SecuenciaUnidadController::class, 'store']);
         Route::patch('/unidades/{unidad}', [SecuenciaUnidadController::class, 'update']);
 
         Route::post('/unidades/{unidad}/temas', [SecuenciaUnidadTemaController::class, 'store']);

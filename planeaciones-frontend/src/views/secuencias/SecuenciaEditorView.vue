@@ -46,9 +46,6 @@
           </template>
         </div>
 
-        <button v-if="editable" class="btn btn-outline btn-sm" style="margin-top:.5rem" @click="agregarUnidad">
-          <Plus :size="14" style="margin-right:4px" /> Añadir unidad
-        </button>
       </div>
 
       <div class="nav-sec">
@@ -393,9 +390,14 @@
                 <span>{{ item.label }}</span>
               </div>
             </div>
-            <button class="btn btn-primary" :disabled="itemsOk < completitud.length || enviando" @click="enviarRevision">
-              <Send :size="14" style="margin-right:4px" /> Enviar a revisión
-            </button>
+            <div class="flex g2u">
+              <button class="btn btn-primary" :disabled="itemsOk < completitud.length || enviando" @click="enviarRevision">
+                <Send :size="14" style="margin-right:4px" /> Enviar a revisión
+              </button>
+              <button class="btn btn-danger" :disabled="eliminando" @click="eliminarSecuencia">
+                <Trash2 :size="14" style="margin-right:4px" /> Eliminar secuencia
+              </button>
+            </div>
           </template>
 
           <template v-else-if="secuencia.estado === 'en_revision'">
@@ -455,6 +457,7 @@ const seccion = ref('caratula')
 const gruposAbiertos = reactive({})
 const modalGruposAbierto = ref(false)
 const enviando = ref(false)
+const eliminando = ref(false)
 const mensajeAccion = ref(null)
 
 const caratula = computed(() => secuencia.value.caratula)
@@ -506,11 +509,6 @@ async function guardarCaratula(campo) {
 
 async function guardarUnidad(unidad, campo) {
   try { await api.patch(`/docente/unidades/${unidad.id}`, { [campo]: unidad[campo] }) } catch (e) { console.error(e) }
-}
-async function agregarUnidad() {
-  const { data } = await api.post(`/docente/secuencias/${secuencia.value.id}/unidades`, {})
-  secuencia.value.unidades.push(data)
-  gruposAbiertos[data.id] = true
 }
 
 async function agregarTema(unidad) {
@@ -597,6 +595,19 @@ async function enviarRevision() {
     enviando.value = false
   }
 }
+async function eliminarSecuencia() {
+  if (!confirm('¿Eliminar esta secuencia? Esta acción no se puede deshacer.')) return
+  eliminando.value = true
+  try {
+    await api.delete(`/docente/secuencias/${secuencia.value.id}`)
+    router.push({ name: 'secuencias-docente' })
+  } catch (e) {
+    mensajeAccion.value = { tipo: 'error', texto: e.response?.data?.message || 'No se pudo eliminar la secuencia.' }
+  } finally {
+    eliminando.value = false
+  }
+}
+
 async function cancelarEnvio() {
   if (!confirm('¿Cancelar el envío y volver a borrador?')) return
   const { data } = await api.post(`/docente/secuencias/${secuencia.value.id}/cancelar-envio`)
