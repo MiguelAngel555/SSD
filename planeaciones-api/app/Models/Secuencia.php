@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\SecuenciaCambioEstadoNotification;
+use Illuminate\Support\Facades\Log;
 
 class Secuencia extends Model
 {
@@ -112,6 +113,8 @@ class Secuencia extends Model
 
         $destinatarios = $this->autores()->get();
 
+        Log::info("Enviando notificación de cambio de estado a los autores de la secuencia ID {$this->id}.");
+        Log::info("Destinatarios: " . $destinatarios->pluck('email')->implode(', '));
         Notification::send($destinatarios, new SecuenciaCambioEstadoNotification($this, $estadoAnterior));
     }
 }
