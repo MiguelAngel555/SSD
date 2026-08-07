@@ -49,7 +49,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Escucha los mensajes que manda la app del celular por Bluetooth -->
+        <!-- Escucha los mensajes y datos sincronizados que manda la app del celular -->
         <service
             android:name="com.ssd.wear.services.TokenReceiverService"
             android:exported="true"
@@ -68,6 +68,14 @@
                 <data
                     android:host="*"
                     android:pathPrefix="/logout"
+                    android:scheme="wear" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+
+                <data
+                    android:host="*"
+                    android:pathPrefix="/auth-token"
                     android:scheme="wear" />
             </intent-filter>
         </service>

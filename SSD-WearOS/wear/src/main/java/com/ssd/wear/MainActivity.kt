@@ -3,6 +3,7 @@ package com.ssd.wear
 import android.Manifest
 import android.os.Build
 import android.os.Bundle
+import android.util.Log // <-- 1. Importa la clase Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,13 +19,6 @@ import com.ssd.wear.ui.NotificacionesScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 
-/**
- * Además del WearableListenerService del manifest (respaldo), esta Activity
- * registra su propio listener de mensajes mientras está en pantalla. Es la
- * vía principal y confiable: en emuladores, el listener declarado en el
- * manifest a veces no se enlaza a tiempo y el mensaje del celular se pierde
- * aunque la app esté abierta.
- */
 class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListener {
 
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -34,6 +28,9 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 2. Agrega este Log.i para confirmar el inicio de la app
+        Log.i("MainActivityWear", "=== APLICACIÓN WEAR OS INICIADA CORRECTAMENTE ===")
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             solicitarPermiso.launch(Manifest.permission.POST_NOTIFICATIONS)

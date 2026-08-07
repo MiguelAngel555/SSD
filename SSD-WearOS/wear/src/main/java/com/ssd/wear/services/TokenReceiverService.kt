@@ -1,20 +1,29 @@
 package com.ssd.wear.services
 
-import com.google.android.gms.wearable.MessageEvent
+import com.google.android.gms.wearable.DataEventBuffer
+import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.WearableListenerService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 
-/**
- * Vía de respaldo declarada en el manifest: la usa el sistema cuando la app
- * no está en primer plano. En emuladores puede fallar en enlazarse a tiempo;
- * la vía principal en la práctica es el listener en vivo de MainActivity.
- */
 class TokenReceiverService : WearableListenerService() {
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
-    override fun onMessageReceived(event: MessageEvent) {
-        MensajeHandler.procesar(applicationContext, scope, event)
+    override fun onDataChanged(dataEvents: DataEventBuffer) {
+        super.onDataChanged(dataEvents)
+
+        for (event in dataEvents) {
+            val path = event.dataItem.uri.path
+            if (path == MensajeHandler.RUTA_TOKEN) {
+                val dataMapItem = DataMapItem.fromDataItem(event.dataItem)
+                val token = dataMapItem.dataMap.getString("token_key")
+
+                if (!token.isNullOrEmpty()) {
+                    // Llamamos a tu función "procesar" respetando tu arquitectura
+                    MensajeHandler.procesar(applicationContext, scope, path, token)
+                }
+            }
+        }
     }
 }

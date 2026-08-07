@@ -1,6 +1,7 @@
 package com.ssd.mobile
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssd.mobile.data.ApiClient
@@ -21,7 +22,7 @@ data class AuthUiState(
     val cargando: Boolean = false,
     val error: String? = null,
     val challengeToken: String? = null,
-    val relojConectado: Boolean? = null, // null = aún no se sabe / no se ha intentado
+    val relojConectado: Boolean? = null,
 )
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
@@ -57,6 +58,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     onSesionIniciada(body.token)
                 }
             } catch (e: Exception) {
+                Log.e("AuthViewModel", "Excepción en login", e)
                 _uiState.value = _uiState.value.copy(
                     cargando = false,
                     error = "No se pudo conectar con el servidor. Verifica tu conexión.",
@@ -83,6 +85,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
                 onSesionIniciada(body.token)
             } catch (e: Exception) {
+                Log.e("AuthViewModel", "Excepción en verificarCodigo", e)
                 _uiState.value = _uiState.value.copy(
                     cargando = false,
                     error = "No se pudo verificar el código. Intenta de nuevo.",
@@ -92,49 +95,66 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun onSesionIniciada(token: String?) {
-        if (token == null) {
-            _uiState.value = _uiState.value.copy(cargando = false, error = "Respuesta inválida del servidor.")
-            return
-        }
+        try {
+            if (token == null) {
+                _uiState.value = _uiState.value.copy(cargando = false, error = "Respuesta inválida del servidor.")
+                return
+            }
 
-        tokenStore.guardarToken(token)
-        _uiState.value = _uiState.value.copy(cargando = false, pantalla = Pantalla.CONFIRMACION)
-        enviarTokenAlReloj(token)
+            tokenStore.guardarToken(token)
+            _uiState.value = _uiState.value.copy(cargando = false, pantalla = Pantalla.CONFIRMACION)
+            enviarTokenAlReloj(token)
+        } catch (e: Exception) {
+            Log.e("AuthViewModel", "Excepción en onSesionIniciada", e)
+            _uiState.value = _uiState.value.copy(cargando = false, error = "Error al guardar la sesión.")
+        }
     }
 
     fun enviarTokenAlReloj(token: String = tokenStore.obtenerToken().orEmpty()) {
         if (token.isEmpty()) return
 
         viewModelScope.launch {
-            when (WatchPairing.enviarTokenAlReloj(getApplication(), token)) {
-                is ResultadoEnvioReloj.Enviado ->
-                    _uiState.value = _uiState.value.copy(relojConectado = true)
-                is ResultadoEnvioReloj.SinRelojConectado, is ResultadoEnvioReloj.Error ->
-                    _uiState.value = _uiState.value.copy(relojConectado = false)
+            try {
+                when (WatchPairing.enviarTokenAlReloj(getApplication(), token)) {
+                    is ResultadoEnvioReloj.Enviado ->
+                        _uiState.value = _uiState.value.copy(relojConectado = true)
+                    is ResultadoEnvioReloj.SinRelojConectado, is ResultadoEnvioReloj.Error ->
+                        _uiState.value = _uiState.value.copy(relojConectado = false)
+                }
+            } catch (e: Exception) {
+                Log.e("AuthViewModel", "Excepción al enviar token al reloj", e)
+                _uiState.value = _uiState.value.copy(relojConectado = false)
             }
         }
     }
 
     fun logout() {
-        val token = tokenStore.obtenerToken()
-        _uiState.value = _uiState.value.copy(cargando = true)
-
         viewModelScope.launch {
-            if (token != null) {
-                try {
-                    ApiClient.authApi.logout("Bearer $token")
-                } catch (e: Exception) {
-                    // Si no hay conexión, igual cerramos sesión localmente;
-                    // el token en el servidor quedará huérfano pero inutilizable
-                    // en la práctica ya que el usuario cerrará también en web.
+            try {
+                val token = tokenStore.obtenerToken()
+                _uiState.value = _uiState.value.copy(cargando = true)
+
+                if (token != null) {
+                    try {
+                        ApiClient.authApi.logout("Bearer $token")
+                    } catch (e: Exception) {
+                        Log.w("AuthViewModel", "No se pudo notificar logout al servidor, continuando localmente", e)
+                    }
                 }
+
+                try {
+                    WatchPairing.avisarLogoutAlReloj(getApplication())
+                } catch (e: Exception) {
+                    Log.w("AuthViewModel", "No se pudo avisar logout al reloj", e)
+                }
+
+                tokenStore.limpiar()
+                _uiState.value = AuthUiState()
+            } catch (e: Exception) {
+                Log.e("AuthViewModel", "Excepción crítica en logout", e)
+                tokenStore.limpiar()
+                _uiState.value = AuthUiState()
             }
-
-            // Avisa al reloj para que borre su sesión y deje de estar registrado.
-            WatchPairing.avisarLogoutAlReloj(getApplication())
-
-            tokenStore.limpiar()
-            _uiState.value = AuthUiState() // vuelve todo a su estado inicial (pantalla LOGIN)
         }
     }
 }
