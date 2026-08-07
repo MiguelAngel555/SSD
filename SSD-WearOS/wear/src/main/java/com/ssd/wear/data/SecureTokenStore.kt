@@ -29,4 +29,8 @@ class SecureTokenStore(context: Context) {
     }
 
     fun estaRegistrado(): Boolean = prefs.getBoolean("registrado", false)
+
+    fun limpiar() {
+        prefs.edit().clear().apply()
+    }
 }

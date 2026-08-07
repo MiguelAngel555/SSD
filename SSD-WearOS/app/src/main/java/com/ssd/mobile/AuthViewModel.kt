@@ -114,4 +114,27 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    fun logout() {
+        val token = tokenStore.obtenerToken()
+        _uiState.value = _uiState.value.copy(cargando = true)
+
+        viewModelScope.launch {
+            if (token != null) {
+                try {
+                    ApiClient.authApi.logout("Bearer $token")
+                } catch (e: Exception) {
+                    // Si no hay conexión, igual cerramos sesión localmente;
+                    // el token en el servidor quedará huérfano pero inutilizable
+                    // en la práctica ya que el usuario cerrará también en web.
+                }
+            }
+
+            // Avisa al reloj para que borre su sesión y deje de estar registrado.
+            WatchPairing.avisarLogoutAlReloj(getApplication())
+
+            tokenStore.limpiar()
+            _uiState.value = AuthUiState() // vuelve todo a su estado inicial (pantalla LOGIN)
+        }
+    }
 }

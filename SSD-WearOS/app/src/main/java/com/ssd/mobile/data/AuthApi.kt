@@ -2,6 +2,7 @@ package com.ssd.mobile.data
 
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.Header
 import retrofit2.http.POST
 
 data class LoginRequest(val email: String, val password: String)
@@ -34,4 +35,7 @@ interface AuthApi {
 
     @POST("2fa/verify")
     suspend fun verificarCodigo(@Body body: TwoFactorVerifyRequest): Response<AuthResponse>
+
+    @POST("logout")
+    suspend fun logout(@Header("Authorization") bearer: String): Response<Unit>
 }

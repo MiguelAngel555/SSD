@@ -42,6 +42,7 @@ class MainActivity : ComponentActivity() {
                         Pantalla.CONFIRMACION -> ConfirmationScreen(
                             relojConectado = estado.relojConectado,
                             onReintentar = { viewModel.enviarTokenAlReloj() },
+                            onCerrarSesion = { viewModel.logout() },
                         )
                     }
                 }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,6 +19,7 @@ import androidx.compose.ui.unit.dp
 fun ConfirmationScreen(
     relojConectado: Boolean?,
     onReintentar: () -> Unit,
+    onCerrarSesion: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -34,7 +36,7 @@ fun ConfirmationScreen(
 
         Text(
             text = "A partir de ahora recibirás notificaciones en tu Wear OS " +
-                "cuando cambie el estado de tus secuencias.",
+                    "cuando cambie el estado de tus secuencias.",
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom = 24.dp),
@@ -47,7 +49,7 @@ fun ConfirmationScreen(
             )
             false -> Text(
                 text = "No detectamos un reloj emparejado. Ábrelo cerca del " +
-                    "celular con la app instalada e inténtalo de nuevo.",
+                        "celular con la app instalada e inténtalo de nuevo.",
                 color = MaterialTheme.colorScheme.error,
                 textAlign = TextAlign.Center,
             )
@@ -66,6 +68,15 @@ fun ConfirmationScreen(
             ) {
                 Text("Reintentar")
             }
+        }
+
+        OutlinedButton(
+            onClick = onCerrarSesion,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp),
+        ) {
+            Text("Cerrar sesión")
         }
     }
 }

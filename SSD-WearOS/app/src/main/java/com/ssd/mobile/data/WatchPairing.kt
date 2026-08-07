@@ -18,8 +18,18 @@ sealed class ResultadoEnvioReloj {
 object WatchPairing {
 
     private const val RUTA_TOKEN = "/auth-token"
+    private const val RUTA_LOGOUT = "/logout"
 
     suspend fun enviarTokenAlReloj(context: Context, token: String): ResultadoEnvioReloj {
+        return enviarMensaje(context, RUTA_TOKEN, token.toByteArray())
+    }
+
+    /** Avisa al reloj que debe borrar su sesión y dejar de estar registrado para push. */
+    suspend fun avisarLogoutAlReloj(context: Context): ResultadoEnvioReloj {
+        return enviarMensaje(context, RUTA_LOGOUT, ByteArray(0))
+    }
+
+    private suspend fun enviarMensaje(context: Context, ruta: String, data: ByteArray): ResultadoEnvioReloj {
         return try {
             val nodeClient = Wearable.getNodeClient(context)
             val nodos = nodeClient.connectedNodes.await()
@@ -30,7 +40,7 @@ object WatchPairing {
 
             val messageClient = Wearable.getMessageClient(context)
             nodos.forEach { nodo ->
-                messageClient.sendMessage(nodo.id, RUTA_TOKEN, token.toByteArray()).await()
+                messageClient.sendMessage(nodo.id, ruta, data).await()
             }
 
             ResultadoEnvioReloj.Enviado

@@ -64,4 +64,25 @@ object DeviceRegistrationRepository {
         val tokenStore = SecureTokenStore(context)
         _estado.value = if (tokenStore.estaRegistrado()) EstadoRegistro.REGISTRADO else EstadoRegistro.DESCONOCIDO
     }
+
+    /** Se llama cuando el celular avisa /logout: borra la sesión del reloj y su registro de push. */
+    suspend fun cerrarSesion(context: android.content.Context) {
+        val tokenStore = SecureTokenStore(context)
+        val authToken = tokenStore.obtenerToken()
+
+        if (authToken != null) {
+            try {
+                val fcmToken = FirebaseMessaging.getInstance().token.await()
+                ApiClient.deviceApi.eliminarToken(
+                    bearer = "Bearer $authToken",
+                    body = DeviceTokenRequest(fcm_token = fcmToken),
+                )
+            } catch (e: Exception) {
+                // Aunque falle la llamada (sin conexión), igual limpiamos localmente.
+            }
+        }
+
+        tokenStore.limpiar()
+        _estado.value = EstadoRegistro.DESCONOCIDO
+    }
 }
