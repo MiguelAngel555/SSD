@@ -18,25 +18,33 @@ object DeviceRegistrationRepository {
     val estado: StateFlow<EstadoRegistro> = _estado
 
     suspend fun registrarConToken(context: android.content.Context, authToken: String) {
+        android.util.Log.d("DeviceRepo", "Iniciando registro con token: ${authToken.take(10)}...")
         _estado.value = EstadoRegistro.EMPAREJANDO
 
         val tokenStore = SecureTokenStore(context)
         tokenStore.guardarToken(authToken)
 
         try {
+            android.util.Log.d("DeviceRepo", "Obteniendo token de Firebase...")
             val fcmToken = FirebaseMessaging.getInstance().token.await()
+            android.util.Log.d("DeviceRepo", "Token FCM obtenido: ${fcmToken.take(10)}...")
+
+            android.util.Log.d("DeviceRepo", "Llamando a registrarToken en la API...")
             val respuesta = ApiClient.deviceApi.registrarToken(
                 bearer = "Bearer $authToken",
                 body = DeviceTokenRequest(fcm_token = fcmToken),
             )
 
             if (respuesta.isSuccessful) {
+                android.util.Log.i("DeviceRepo", "Registro exitoso en el servidor (200 OK)")
                 tokenStore.marcarRegistrado(true)
                 _estado.value = EstadoRegistro.REGISTRADO
             } else {
+                android.util.Log.e("DeviceRepo", "Error en la API: Code ${respuesta.code()} - ${respuesta.errorBody()?.string()}")
                 _estado.value = EstadoRegistro.ERROR
             }
         } catch (e: Exception) {
+            android.util.Log.e("DeviceRepo", "Excepción durante el registro", e)
             _estado.value = EstadoRegistro.ERROR
         }
     }

@@ -7,7 +7,18 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <!-- Permisos de Bluetooth para compatibilidad con versiones anteriores -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+
+    <!-- Permisos de Bluetooth requeridos para Android 12+ (API 31+) -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+
     <application
+        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -28,30 +39,22 @@
             </intent-filter>
         </activity>
 
-        <!-- Escucha los mensajes y datos sincronizados que manda la app del celular -->
+        <!-- Escucha los DataItem sincronizados que manda la app del celular vía DataClient -->
         <service
             android:name=".services.TokenReceiverService"
-            android:exported="true"
-            android:permission="com.google.android.gms.permission.BIND_LISTENER">
+            android:exported="true">
             <intent-filter>
-                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
                 <data
                     android:host="*"
                     android:pathPrefix="/auth-token"
-                    android:scheme="wear" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
-                <data
-                    android:host="*"
-                    android:pathPrefix="/logout"
                     android:scheme="wear" />
             </intent-filter>
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
                 <data
                     android:host="*"
-                    android:pathPrefix="/auth-token"
+                    android:pathPrefix="/logout"
                     android:scheme="wear" />
             </intent-filter>
         </service>

@@ -113,7 +113,7 @@ class Secuencia extends Model
 
         $destinatarios = $this->autores()->get();
 
-        Log::info("Enviando notificación de cambio de estado a los autores de la secuencia ID {$this->id}.");
+        Log::info("Enviando notificación de cambio de estado a los autores de la secuencia ID {$usuario->id}.");
         Log::info("Destinatarios: " . $destinatarios->pluck('email')->implode(', '));
         Notification::send($destinatarios, new SecuenciaCambioEstadoNotification($this, $estadoAnterior));
     }

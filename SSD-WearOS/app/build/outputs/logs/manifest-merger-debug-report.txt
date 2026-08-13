@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:1:1-25:12
-INJECTED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:1:1-25:12
-INJECTED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:1:1-25:12
-INJECTED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:1:1-25:12
+ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:1:1-35:12
+INJECTED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:1:1-35:12
+INJECTED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:1:1-35:12
+INJECTED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:1:1-35:12
 MERGED from [androidx.navigation:navigation-common:2.8.0] C:\Users\migue\.gradle\caches\9.0.0\transforms\d813ee8faf8f8b72ccfbadf64eed65c2\transformed\navigation-common-2.8.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.navigation:navigation-runtime:2.8.0] C:\Users\migue\.gradle\caches\9.0.0\transforms\9208153c980608acb02c019edfa5c7b5\transformed\navigation-runtime-2.8.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.navigation:navigation-common-ktx:2.8.0] C:\Users\migue\.gradle\caches\9.0.0\transforms\2dc6361219c173142e87de2b73fab93d\transformed\navigation-common-ktx-2.8.0\AndroidManifest.xml:2:1-7:12
@@ -79,9 +79,35 @@ uses-permission#android.permission.INTERNET
 ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:3:5-67
 	android:name
 		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:3:22-64
+uses-permission#android.permission.BLUETOOTH
+ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:6:5-95
+	android:maxSdkVersion
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:6:66-92
+	android:name
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:6:22-65
+uses-permission#android.permission.BLUETOOTH_ADMIN
+ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:7:5-101
+	android:maxSdkVersion
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:7:72-98
+	android:name
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:7:22-71
+uses-permission#android.permission.BLUETOOTH_SCAN
+ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:10:5-11:58
+	android:usesPermissionFlags
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:11:9-55
+	android:name
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:10:22-70
+uses-permission#android.permission.BLUETOOTH_CONNECT
+ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:12:5-76
+	android:name
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:12:22-73
+uses-permission#android.permission.BLUETOOTH_ADVERTISE
+ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:13:5-78
+	android:name
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:13:22-75
 application
-ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:5:5-23:19
-INJECTED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:5:5-23:19
+ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:15:5-33:19
+INJECTED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:15:5-33:19
 MERGED from [com.google.android.gms:play-services-wearable:19.0.0] C:\Users\migue\.gradle\caches\9.0.0\transforms\4a68a4f16d547ef4c1c64bcfee95f794\transformed\play-services-wearable-19.0.0\AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.gms:play-services-wearable:19.0.0] C:\Users\migue\.gradle\caches\9.0.0\transforms\4a68a4f16d547ef4c1c64bcfee95f794\transformed\play-services-wearable-19.0.0\AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.gms:play-services-base:18.5.0] C:\Users\migue\.gradle\caches\9.0.0\transforms\6a47f09704afcbe187374c7e50c65a79\transformed\play-services-base-18.5.0\AndroidManifest.xml:4:5-6:19
@@ -109,35 +135,35 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\migue\.gradle\cach
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.13.1] C:\Users\migue\.gradle\caches\9.0.0\transforms\4eb29006c2e7723e49e532acd19ae8a4\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
 	android:label
-		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:10:9-41
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:20:9-41
 	android:roundIcon
-		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:9:9-54
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:19:9-54
 	android:icon
-		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:8:9-43
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:18:9-43
 	android:allowBackup
-		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:7:9-35
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:17:9-35
 	android:theme
-		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:11:9-47
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:21:9-47
 	android:usesCleartextTraffic
-		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:6:9-44
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:16:9-44
 activity#com.ssd.mobile.MainActivity
-ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:13:9-21:20
+ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:23:9-31:20
 	android:exported
-		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:15:13-36
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:25:13-36
 	android:theme
-		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:16:13-51
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:26:13-51
 	android:name
-		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:14:13-41
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:24:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:17:13-20:29
+ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:27:13-30:29
 action#android.intent.action.MAIN
-ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:18:17-69
+ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:28:17-69
 	android:name
-		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:18:25-66
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:28:25-66
 category#android.intent.category.LAUNCHER
-ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:19:17-77
+ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:29:17-77
 	android:name
-		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:19:27-74
+		ADDED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml:29:27-74
 uses-sdk
 INJECTED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\xampp\htdocs\uni\integradora9\SSD-WearOS\app\src\main\AndroidManifest.xml

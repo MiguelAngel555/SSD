@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ssd.wear"
+    package="com.ssd.mobile"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -14,14 +14,29 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Permisos de Bluetooth para compatibilidad con versiones anteriores -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30" />
+
+    <!-- Permisos de Bluetooth requeridos para Android 12+ (API 31+) -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- Required by older versions of Google Play services to create IID tokens -->
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
     <permission
-        android:name="com.ssd.wear.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+        android:name="com.ssd.mobile.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="com.ssd.wear.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+    <uses-permission android:name="com.ssd.mobile.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
 
     <application
         android:allowBackup="true"
@@ -31,7 +46,8 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:testOnly="true"
-        android:theme="@style/Theme.SsdWear" >
+        android:theme="@style/Theme.SsdWear"
+        android:usesCleartextTraffic="true" >
 
         <!-- Requerido para que la app aparezca como instalable en un reloj standalone -->
         <meta-data
@@ -49,25 +65,16 @@
             </intent-filter>
         </activity>
 
-        <!-- Escucha los mensajes y datos sincronizados que manda la app del celular -->
+        <!-- Escucha los DataItem sincronizados que manda la app del celular vía DataClient -->
         <service
             android:name="com.ssd.wear.services.TokenReceiverService"
-            android:exported="true"
-            android:permission="com.google.android.gms.permission.BIND_LISTENER" >
+            android:exported="true" >
             <intent-filter>
-                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
 
                 <data
                     android:host="*"
                     android:pathPrefix="/auth-token"
-                    android:scheme="wear" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
-
-                <data
-                    android:host="*"
-                    android:pathPrefix="/logout"
                     android:scheme="wear" />
             </intent-filter>
             <intent-filter>
@@ -75,7 +82,7 @@
 
                 <data
                     android:host="*"
-                    android:pathPrefix="/auth-token"
+                    android:pathPrefix="/logout"
                     android:scheme="wear" />
             </intent-filter>
         </service>
@@ -159,7 +166,7 @@
 
         <provider
             android:name="androidx.startup.InitializationProvider"
-            android:authorities="com.ssd.wear.androidx-startup"
+            android:authorities="com.ssd.mobile.androidx-startup"
             android:exported="false" >
             <meta-data
                 android:name="androidx.emoji2.text.EmojiCompatInitializer"
@@ -173,7 +180,7 @@
         </provider>
         <provider
             android:name="com.google.firebase.provider.FirebaseInitProvider"
-            android:authorities="com.ssd.wear.firebaseinitprovider"
+            android:authorities="com.ssd.mobile.firebaseinitprovider"
             android:directBootAware="true"
             android:exported="false"
             android:initOrder="100" />

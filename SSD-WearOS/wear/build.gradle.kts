@@ -10,7 +10,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.ssd.wear"
+        applicationId = "com.ssd.mobile"
         minSdk = 30 // Wear OS 3+
         targetSdk = 35
         versionCode = 1
@@ -50,6 +50,7 @@ dependencies {
     // Registrar el fcm_token contra planeaciones-api
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     // Guardar el token de sesión de forma cifrada
     implementation("androidx.security:security-crypto:1.1.0-alpha06")

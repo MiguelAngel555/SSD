@@ -21,15 +21,22 @@
             <tbody>
               <tr v-if="cargando"><td colspan="4" class="sz-sm" style="text-align:center;color:var(--text-300)">Cargando…</td></tr>
               <tr v-else-if="secuencias.length === 0"><td colspan="4" class="sz-sm" style="text-align:center;color:var(--text-300)">No hay secuencias pendientes de validación.</td></tr>
-              <tr v-for="s in secuencias" :key="s.id">
+              <tr
+                v-for="s in secuencias"
+                :key="s.id"
+                class="row-open"
+                title="Doble clic para abrir"
+                @dblclick="secuenciaSeleccionada = s.id"
+              >
                 <td>{{ s.asignatura?.nombre }}</td>
                 <td>{{ s.periodo }}</td>
                 <td>{{ s.autores.map(a => a.nombre_completo).join(', ') }}</td>
-                <td><IconButton title="Ver resumen" @click="secuenciaSeleccionada = s.id"><Eye :size="16" /></IconButton></td>
+                <td><IconButton title="Ver resumen" @click.stop="secuenciaSeleccionada = s.id"><Eye :size="16" /></IconButton></td>
               </tr>
             </tbody>
           </table>
         </div>
+        <p v-if="secuencias.length" class="tbl-hint">Tip: doble clic en una fila para abrir el resumen.</p>
       </div>
     </div>
 

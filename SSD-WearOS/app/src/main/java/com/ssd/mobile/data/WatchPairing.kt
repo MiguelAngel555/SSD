@@ -1,6 +1,8 @@
 package com.ssd.mobile.data
 
 import android.content.Context
+import com.google.android.gms.wearable.DataMap
+import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.tasks.await
 
@@ -21,15 +23,21 @@ object WatchPairing {
     private const val RUTA_LOGOUT = "/logout"
 
     suspend fun enviarTokenAlReloj(context: Context, token: String): ResultadoEnvioReloj {
-        return enviarMensaje(context, RUTA_TOKEN, token.toByteArray())
+        return enviarDataItem(context, RUTA_TOKEN) { dataMap ->
+            dataMap.putString("token_key", token)
+        }
     }
 
     /** Avisa al reloj que debe borrar su sesión y dejar de estar registrado para push. */
     suspend fun avisarLogoutAlReloj(context: Context): ResultadoEnvioReloj {
-        return enviarMensaje(context, RUTA_LOGOUT, ByteArray(0))
+        return enviarDataItem(context, RUTA_LOGOUT) { /* sin payload extra */ }
     }
 
-    private suspend fun enviarMensaje(context: Context, ruta: String, data: ByteArray): ResultadoEnvioReloj {
+    private suspend fun enviarDataItem(
+        context: Context,
+        ruta: String,
+        armarPayload: (DataMap) -> Unit,
+    ): ResultadoEnvioReloj {
         return try {
             val nodeClient = Wearable.getNodeClient(context)
             val nodos = nodeClient.connectedNodes.await()
@@ -38,10 +46,20 @@ object WatchPairing {
                 return ResultadoEnvioReloj.SinRelojConectado
             }
 
-            val messageClient = Wearable.getMessageClient(context)
-            nodos.forEach { nodo ->
-                messageClient.sendMessage(nodo.id, ruta, data).await()
-            }
+            val request = PutDataMapRequest.create(ruta).apply {
+                armarPayload(dataMap)
+                // Forzamos que el DataItem cuente como "cambiado" aunque el
+                // contenido (p. ej. el mismo token tras un logout/login) sea
+                // idéntico al anterior. Sin esto, Wear OS deduplica por
+                // contenido y onDataChanged nunca se vuelve a disparar.
+                dataMap.putLong("timestamp", System.currentTimeMillis())
+            }.asPutDataRequest().setUrgent()
+
+            // DataClient encola el DataItem de forma persistente: si el reloj
+            // no está disponible en este instante, se sincroniza en cuanto
+            // vuelva a conectarse. No depende de que ambos procesos estén
+            // vivos exactamente al mismo tiempo, a diferencia de sendMessage.
+            Wearable.getDataClient(context).putDataItem(request).await()
 
             ResultadoEnvioReloj.Enviado
         } catch (e: Exception) {

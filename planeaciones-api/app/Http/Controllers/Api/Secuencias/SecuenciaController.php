@@ -285,6 +285,34 @@ class SecuenciaController extends Controller
     }
 
     /**
+     * GET /api/secuencias/{secuencia}/completitud
+     * Recalcula solo el checklist (sin traer toda la secuencia otra vez),
+     * para refrescar la lista de verificación después de cada cambio.
+     */
+    public function completitud(Request $request, Secuencia $secuencia)
+    {
+        try {
+            $usuario = $request->user();
+            $esAutor = $secuencia->autores()->where('users.id', $usuario->id)->exists();
+
+            if (! $esAutor && ! $usuario->tieneRol('Administrador')) {
+                return response()->json(['message' => 'No tienes acceso a esta secuencia.'], 403);
+            }
+
+            return response()->json($this->secuenciaService->completitud($secuencia));
+        } catch (Throwable $e) {
+            Log::error('SecuenciaController@completitud: error al recalcular la completitud', [
+                'secuencia_id' => $secuencia->id,
+                'mensaje' => $e->getMessage(),
+                'linea' => $e->getLine(),
+                'archivo' => $e->getFile(),
+            ]);
+
+            return response()->json(['message' => 'No se pudo recalcular la lista de verificación.'], 500);
+        }
+    }
+
+    /**
      * GET /api/director/secuencias/{secuencia}/resumen
      * Para el modal del director: solo un resumen, no el editor completo.
      */

@@ -49,7 +49,13 @@
                 No se encontraron carreras.
               </td>
             </tr>
-            <tr v-for="c in carreras" :key="c.id">
+            <tr
+              v-for="c in carreras"
+              :key="c.id"
+              class="row-open"
+              title="Doble clic para ver el detalle"
+              @dblclick="abrirDetalle(c)"
+            >
               <td>{{ c.clave }}</td>
               <td>{{ c.nombre }}</td>
               <td>{{ c.director ? nombreCompleto(c.director) : '—' }}</td>
@@ -61,16 +67,16 @@
               </td>
               <td>
                 <div class="flex ic g2u">
-                  <IconButton title="Ver detalle" @click="abrirDetalle(c)">
+                  <IconButton title="Ver detalle" @click.stop="abrirDetalle(c)">
                     <Eye :size="16" />
                   </IconButton>
-                  <IconButton title="Editar" @click="abrirEditar(c)">
+                  <IconButton title="Editar" @click.stop="abrirEditar(c)">
                     <Pencil :size="16" />
                   </IconButton>
                   <IconButton
                     :title="c.activo ? 'Desactivar' : 'Activar'"
                     :variant="c.activo ? 'danger' : 'primary'"
-                    @click="toggleActivo(c)"
+                    @click.stop="toggleActivo(c)"
                   >
                     <Power :size="16" />
                   </IconButton>
@@ -80,6 +86,7 @@
           </tbody>
         </table>
       </div>
+      <p v-if="carreras.length" class="tbl-hint">Tip: doble clic en una fila para ver el detalle de la carrera.</p>
 
       <!-- Paginación -->
       <div v-if="paginacion.last_page > 1" class="flex jb ic" style="padding: var(--s4)">

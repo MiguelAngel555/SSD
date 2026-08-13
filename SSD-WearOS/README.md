@@ -19,13 +19,12 @@ reciente, con soporte de Wear OS). Deja que sincronice Gradle.
 
 1. Entra a [Firebase Console](https://console.firebase.google.com) y crea
    (o reusa) un proyecto.
-2. Agrega **dos** apps Android al proyecto:
-   - Package name `com.ssd.mobile` (opcional, solo si más adelante
-     quieres push también en el celular; hoy no es indispensable).
-   - Package name `com.ssd.wear` (obligatorio, es la que recibe el push).
-3. Descarga el `google-services.json` (incluye ambas apps) y colócalo en:
+2. Agrega una app Android al proyecto con el Package name **`com.ssd.mobile`**.
+   *Nota: Ambas apps (celular y reloj) deben compartir el mismo Package Name
+   (Application ID) para que la sincronización del token funcione.*
+3. Descarga el `google-services.json` y colócalo en:
    - `wear/google-services.json`
-   - `app/google-services.json` (si registraste también esa app)
+   - `app/google-services.json`
 4. En Configuración del proyecto → Cuentas de servicio, genera una clave
    privada. Ese JSON es para el **backend Laravel**, no para Android (ver
    `CAMBIOS_EN_ARCHIVOS_EXISTENTES.md` del backend).

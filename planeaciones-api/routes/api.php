@@ -72,6 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Compartidas (la autorización fina vive dentro del controlador)
     Route::get('/secuencias/catalogos', [SecuenciaController::class, 'catalogos']);
     Route::get('/secuencias/{secuencia}', [SecuenciaController::class, 'show']);
+    Route::get('/secuencias/{secuencia}/completitud', [SecuenciaController::class, 'completitud']);
 
     // Docente
     Route::middleware('role:Docente')->prefix('docente')->group(function () {
