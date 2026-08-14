@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Secuencias\SecuenciaUnidadController;
 use App\Http\Controllers\Api\Secuencias\SecuenciaUnidadEvaluacionController;
 use App\Http\Controllers\Api\Secuencias\SecuenciaUnidadEvidenciaController;
 use App\Http\Controllers\Api\Secuencias\SecuenciaUnidadTemaController;
+use App\Http\Controllers\Api\Secuencias\ValidacionDocumentoController;
 use App\Http\Controllers\Api\TwoFactorController;
 use App\Http\Controllers\Api\Usuario\ConfirmacionCuentaController;
 use App\Http\Controllers\Api\Usuario\UserController;
@@ -120,7 +121,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:Director')->prefix('director')->group(function () {
         Route::get('/secuencias', [SecuenciaController::class, 'colaDirector']);
         Route::get('/secuencias/{secuencia}/resumen', [SecuenciaController::class, 'resumen']);
-        Route::post('/secuencias/{secuencia}/validar', [SecuenciaController::class, 'validar']);
+        Route::get('/secuencias/{secuencia}/formato-validacion', [ValidacionDocumentoController::class, 'descargar']);
+        Route::post('/secuencias/{secuencia}/validar', [ValidacionDocumentoController::class, 'subir']);
         Route::post('/secuencias/{secuencia}/rechazar', [SecuenciaController::class, 'rechazar']);
     });
 });

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Asignatura;
 use App\Models\Secuencia;
 use App\Models\User;
+use App\Services\PeriodoAcademicoService;
 use App\Services\SecuenciaService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -31,7 +32,10 @@ class SecuenciaController extends Controller
         'referencias.revision',
     ];
 
-    public function __construct(private SecuenciaService $secuenciaService) {}
+    public function __construct(
+        private SecuenciaService $secuenciaService,
+        private PeriodoAcademicoService $periodoAcademico,
+    ) {}
 
     /**
      * GET /api/docente/secuencias?estado=borrador|validada
@@ -98,23 +102,38 @@ class SecuenciaController extends Controller
     }
 
     /**
-     * GET /api/director/secuencias
-     * Solo las de las carreras que dirige.
+     * GET /api/director/secuencias?periodo=Mayo - Agosto 2026
+     * Todas las secuencias (en cualquier estado) de la carrera que dirige,
+     * del periodo indicado. Si no se manda "periodo", usa el periodo actual.
+     * Antes solo mostraba las pendientes de validación; ahora el director
+     * necesita ver el panorama completo del periodo.
      */
     public function colaDirector(Request $request)
     {
         try {
             $usuario = $request->user();
             $carreraId = $usuario->carreraDirigida()->value('id');
+            $periodo = $request->get('periodo') ?: $this->periodoAcademico->actual();
+
+            $ordenEstados = ['en_proceso_validacion', 'en_revision', 'borrador', 'rechazada', 'validada'];
+            $casoOrden = 'CASE estado ' . implode(' ', array_map(
+                fn($estado, $i) => "WHEN '{$estado}' THEN {$i}",
+                $ordenEstados,
+                array_keys($ordenEstados)
+            )) . ' ELSE 99 END';
 
             $secuencias = Secuencia::query()
                 ->with(['asignatura', 'especialidad', 'carrera', 'autores'])
-                ->where('estado', 'en_proceso_validacion')
+                ->where('periodo', $periodo)
                 ->when($carreraId, fn($q) => $q->where('carrera_id', $carreraId), fn($q) => $q->whereRaw('1 = 0'))
+                ->orderByRaw($casoOrden)
                 ->orderBy('updated_at')
                 ->get();
 
-            return response()->json($secuencias);
+            return response()->json([
+                'periodo' => $periodo,
+                'secuencias' => $secuencias,
+            ]);
         } catch (Throwable $e) {
             Log::error('SecuenciaController@colaDirector: error al listar la cola del director', [
                 'mensaje' => $e->getMessage(),
@@ -409,18 +428,6 @@ class SecuenciaController extends Controller
     public function rechazarRevision(Request $request, Secuencia $secuencia)
     {
         return $this->cambiarEstado($request, $secuencia, 'en_revision', 'borrador');
-    }
-
-    /**
-     * POST /api/director/secuencias/{secuencia}/validar
-     */
-    public function validar(Request $request, Secuencia $secuencia)
-    {
-        return $this->cambiarEstado($request, $secuencia, 'en_proceso_validacion', 'validada', function () use ($request, $secuencia) {
-            if ($secuencia->carrera_id !== $request->user()->carreraDirigida()->value('id')) {
-                abort(403, 'No diriges la carrera de esta secuencia.');
-            }
-        });
     }
 
     /**

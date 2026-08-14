@@ -196,6 +196,7 @@
             </td>
           </tr>
         </table>
+        <DocFooter :pagina="paginaDe('caratula')" :total-paginas="totalPaginasDoc" />
       </div>
 
       <!-- ═══ POR UNIDAD ═══ -->
@@ -309,6 +310,7 @@
               </tbody>
             </table>
           </div>
+          <DocFooter :pagina="paginaDe('info', i)" :total-paginas="totalPaginasDoc" />
         </div>
 
         <!-- C. Evaluación -->
@@ -415,6 +417,7 @@
             Cada unidad debe tener al menos dos tipos distintos de evaluación y la suma de ponderaciones debe ser
             exactamente 100%.
           </div>
+          <DocFooter :pagina="paginaDe('evaluacion', i)" :total-paginas="totalPaginasDoc" />
         </div>
 
         <!-- D. Secuencia (fases) -->
@@ -502,6 +505,7 @@
               </table>
             </div>
           </div>
+          <DocFooter :pagina="paginaDe('secuencia', i)" :total-paginas="totalPaginasDoc" />
         </div>
       </template>
 
@@ -555,6 +559,7 @@
             </tbody>
           </table>
         </div>
+        <DocFooter :pagina="paginaDe('bibliografia')" :total-paginas="totalPaginasDoc" />
       </div>
 
       <!-- ═══ FINALIZAR ═══ -->
@@ -616,11 +621,16 @@
           </template>
           <template v-else-if="secuencia.estado === 'validada'">
             <div class="alert a-success">Esta secuencia fue validada. Ya no puede modificarse.</div>
+            <a v-if="secuencia.documento_validacion_url" class="btn btn-outline mt3" :href="secuencia.documento_validacion_url"
+              target="_blank" rel="noopener">
+              <FileText :size="14" style="margin-right:4px" /> Ver documento de validación firmado
+            </a>
           </template>
           <template v-else-if="secuencia.estado === 'rechazada'">
             <div class="alert a-danger">Esta secuencia fue rechazada por el director.</div>
           </template>
         </div>
+        <DocFooter :pagina="paginaDe('finalizar')" :total-paginas="totalPaginasDoc" />
       </div>
     </div>
   </div>
@@ -641,6 +651,7 @@ import { INSTRUCCIONES } from '@/config/instrucciones'
 import { ESTRATEGIAS_POR_FASE } from '@/config/estrategias'
 import InfoTooltip from '@/components/InfoTooltip.vue'
 import DocHeader from '@/components/DocHeader.vue'
+import DocFooter from '@/components/DocFooter.vue'
 import ValidacionElemento from '@/components/ValidacionElemento.vue'
 import IconButton from '@/components/IconButton.vue'
 import EditarGruposAutoresModal from './EditarGruposAutoresModal.vue'
@@ -691,6 +702,21 @@ function marcarErrorGuardado() {
 }
 
 const caratula = computed(() => secuencia.value.caratula)
+
+// ── Numeración de "página" del pie de página (réplica del formato oficial:
+// Carátula = pág. 1, luego 3 páginas por cada unidad (B, C, D), luego
+// Bibliografía y Finalizar). No es una paginación real de impresión, solo
+// la numeración que muestra el documento oficial en cada sección. ──
+const totalPaginasDoc = computed(() => 1 + (secuencia.value.unidades.length * 3) + 2)
+function paginaDe(tipo, indiceUnidad = 0) {
+  if (tipo === 'caratula') return 1
+  if (tipo === 'info') return 2 + indiceUnidad * 3
+  if (tipo === 'evaluacion') return 3 + indiceUnidad * 3
+  if (tipo === 'secuencia') return 4 + indiceUnidad * 3
+  if (tipo === 'bibliografia') return 2 + secuencia.value.unidades.length * 3
+  if (tipo === 'finalizar') return 3 + secuencia.value.unidades.length * 3
+  return 1
+}
 
 const TIPOS_EVALUACION = [
   'Autoevaluación', 'Coevaluación', 'Heteroevaluación',

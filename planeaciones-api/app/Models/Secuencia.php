@@ -22,6 +22,8 @@ class Secuencia extends Model
         'estado',
         'fecha_solicitud_revision',
         'fecha_validacion',
+        'documento_validacion_url',
+        'documento_validacion_origen',
         'activo',
     ];
 

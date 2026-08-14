@@ -125,17 +125,46 @@
 
 .doc-header-text h2 {
   font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.doc-header-text h3 {
+  font-size: 11px;
   font-weight: 400;
   text-transform: uppercase;
   color: #444;
   margin-bottom: 4px;
 }
 
-.doc-header-text h3 {
+.doc-header-text h4 {
   font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--doc-section-col);
+}
+
+/* ── Pie de página (réplica del formato oficial: código/revisión + página) ── */
+.doc-footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .8rem 1.4rem;
+  border-top: 2px solid var(--doc-border);
+  background: var(--doc-paper-bg);
+  font-size: 10px;
+  color: #555;
+}
+
+.doc-footer-codigo {
+  line-height: 1.5;
+}
+
+.doc-footer-pagina {
+  white-space: nowrap;
 }
 
 .doc-section-title {
