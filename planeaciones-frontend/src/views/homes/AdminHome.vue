@@ -1,15 +1,17 @@
 <template>
   <AppShell>
-    <!-- ============ HERO SECTION CON EFECTO 3D ============ -->
+    <!-- ============ HERO SECTION CON EFECTO 3D (Modo Claro) ============ -->
     <section class="hero-tilt" @mousemove="handleHeroMouseMove" @mouseleave="handleHeroMouseLeave" ref="heroRef">
       <div class="hero-content">
         <div class="hero-tag">
           <Settings :size="14" class="spin-slow" /> Administrador del Sistema
         </div>
-        <h1>Panel de<br><span class="accent">Administración</span></h1>
-        <p>Gestión centralizada de catálogos académicos y control de usuarios desde un entorno unificado.</p>
+        <h1>Panel de <span class="accent">Administración</span></h1>
+        <p>Gestión centralizada de catálogos académicos y control de usuarios desde un entorno unificado y amigable.</p>
       </div>
-      <div class="hero-glow"></div>
+      <!-- Círculos decorativos de fondo estilo "Soft UI" -->
+      <div class="hero-blob blob-1"></div>
+      <div class="hero-blob blob-2"></div>
     </section>
 
     <!-- ============ CATÁLOGOS ============ -->
@@ -24,9 +26,9 @@
 
       <div class="g2">
         <!-- Tarjeta 1: Carreras -->
-        <router-link :to="{ name: 'admin-academico' }" class="card-tilt c-teal">
+        <router-link :to="{ name: 'admin-academico' }" class="card-tilt">
           <div class="card-inner">
-            <div class="card-icon-wrap">
+            <div class="card-icon-wrap c-green">
               <GraduationCap :size="28" />
             </div>
             <div class="card-info">
@@ -37,24 +39,22 @@
               <ChevronRight :size="18" />
             </div>
           </div>
-          <div class="card-shine"></div>
         </router-link>
 
         <!-- Tarjeta 2: Usuarios -->
-        <router-link :to="{ name: 'admin-usuarios' }" class="card-tilt c-purple">
+        <router-link :to="{ name: 'admin-usuarios' }" class="card-tilt">
           <div class="card-inner">
-            <div class="card-icon-wrap purple-icon">
+            <div class="card-icon-wrap c-blue">
               <Users :size="28" />
             </div>
             <div class="card-info">
               <h3>Gestión de Usuarios</h3>
               <p>Crear cuentas, asignar roles institucionales, materias y directores.</p>
             </div>
-            <div class="card-arrow-wrap purple-arrow">
+            <div class="card-arrow-wrap">
               <ChevronRight :size="18" />
             </div>
           </div>
-          <div class="card-shine"></div>
         </router-link>
       </div>
     </div>
@@ -66,7 +66,7 @@ import { ref } from 'vue'
 import { Settings, GraduationCap, Users, ChevronRight } from 'lucide-vue-next'
 import AppShell from '@/components/AppShell.vue'
 
-// Lógica de efecto Parallax / Inclinación 3D para el Hero
+// Lógica de efecto Parallax / Inclinación 3D (se mantiene intacta)
 const heroRef = ref(null)
 
 function handleHeroMouseMove(e) {
@@ -91,23 +91,23 @@ function handleHeroMouseLeave() {
 </script>
 
 <style scoped>
-/* ---- HERO CON EFECTO PROFUNDO ---- */
+/* ---- HERO CON EFECTO PROFUNDO (MODO CLARO) ---- */
 .hero-tilt {
   position: relative;
   overflow: hidden;
-  border-radius: 24px;
-  background: linear-gradient(135deg, #131825 0%, #0F172A 50%, #080C14 100%);
-  border: 1px solid rgba(34, 211, 168, 0.2);
+  border-radius: var(--r-xl);
+  background: var(--bg-white);
+  border: 1px solid var(--border);
   padding: 42px 48px;
   margin-bottom: 38px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: transform 0.1s ease-out, box-shadow 0.3s ease;
+  box-shadow: var(--sh-sm);
+  transition: transform 0.1s ease-out, box-shadow 0.3s ease, border-color 0.3s ease;
   will-change: transform;
 }
 
 .hero-tilt:hover {
-  box-shadow: 0 30px 60px -12px rgba(34, 211, 168, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  border-color: rgba(34, 211, 168, 0.4);
+  box-shadow: var(--sh-lg);
+  border-color: var(--uth-verde-claro);
 }
 
 .hero-content {
@@ -119,14 +119,15 @@ function handleHeroMouseLeave() {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(34, 211, 168, 0.1);
-  padding: 6px 14px;
-  border-radius: 20px;
+  background: var(--bg-page);
+  padding: 8px 16px;
+  border-radius: var(--r-pill);
   font-size: 12.5px;
-  font-weight: 600;
-  color: var(--brand, #22D3A8);
+  font-weight: 700;
+  color: var(--uth-verde);
   margin-bottom: 18px;
-  border: 1px solid rgba(34, 211, 168, 0.25);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .hero h1 {
@@ -134,95 +135,57 @@ function handleHeroMouseLeave() {
   font-weight: 800;
   font-size: 38px;
   line-height: 1.15;
-  color: #F8FAFC;
+  color: var(--text-900);
   margin: 0 0 12px 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -1px;
 }
 
 .hero h1 .accent {
-  background: linear-gradient(90deg, #6EE7C9, #3B82F6, #8B5CF6);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--uth-verde);
 }
 
 .hero p {
   font-size: 15px;
-  color: #94A3B8;
+  color: var(--text-500);
   margin: 0;
   max-width: 500px;
   line-height: 1.6;
 }
 
-.hero-glow {
+/* Manchas decorativas tipo Soft UI en el fondo del Hero */
+.hero-blob {
   position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
-  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(40px);
+  z-index: 1;
+}
+.blob-1 {
+  width: 300px;
+  height: 300px;
+  background: rgba(0, 182, 79, 0.08); /* Verde suave */
+  top: -50px;
+  right: -50px;
+}
+.blob-2 {
+  width: 200px;
+  height: 200px;
+  background: rgba(6, 182, 212, 0.08); /* Cian suave */
+  bottom: -50px;
+  right: 150px;
 }
 
-/* ---- SECCIÓN ---- */
-.sec {
-  margin-bottom: 40px;
-}
-
-.sec-hdr {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 22px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border-soft, #1A222E);
-}
-
-.sec-num {
-  width: 28px;
-  height: 28px;
-  background: rgba(34, 211, 168, 0.15);
-  color: var(--brand, #22D3A8);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  border: 1px solid rgba(34, 211, 168, 0.3);
-}
-
-.sec-hdr h2 {
-  font-family: 'Sora', sans-serif;
-  font-weight: 700;
-  font-size: 20px;
-  margin: 0;
-  color: var(--text, #F4F6F9);
-}
-
-.sec-hdr p {
-  font-size: 13.5px;
-  color: #64748B;
-  margin: 2px 0 0 0;
-}
-
-/* ---- TARJETAS CON EFECTO HOVER INTERACTIVO Y BRILLO ---- */
-.g2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
+/* ---- TARJETAS CON EFECTO HOVER INTERACTIVO (MODO CLARO) ---- */
 .card-tilt {
   position: relative;
-  background: #111827;
-  border: 1px solid #1F2937;
-  border-radius: 18px;
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
   overflow: hidden;
   text-decoration: none;
   color: inherit;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--sh-xs);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
 }
 
 .card-inner {
@@ -234,45 +197,39 @@ function handleHeroMouseLeave() {
   gap: 18px;
 }
 
-/* Línea lateral de acento distintiva */
-.card-tilt.c-teal { border-left: 4px solid #22D3A8; }
-.card-tilt.c-purple { border-left: 4px solid #8B5CF6; }
-
 .card-tilt:hover {
   transform: translateY(-6px) scale(1.01);
-  box-shadow: 0 20px 40px -15px rgba(34, 211, 168, 0.2);
-  border-color: rgba(34, 211, 168, 0.4);
-  background: #131F33;
+  box-shadow: var(--sh-md);
+  border-color: var(--uth-verde-claro);
 }
 
-.card-tilt.c-purple:hover {
-  box-shadow: 0 20px 40px -15px rgba(139, 92, 246, 0.25);
-  border-color: rgba(139, 92, 246, 0.4);
-}
-
-/* Iconos estilizados */
+/* Iconos estilizados caricatura */
 .card-icon-wrap {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: rgba(34, 211, 168, 0.12);
-  color: #22D3A8;
-  border: 1px solid rgba(34, 211, 168, 0.25);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s var(--ease-spring), box-shadow 0.3s ease;
+}
+
+.c-green {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.c-blue {
+  background: var(--info-bg);
+  color: var(--info);
+  border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .card-tilt:hover .card-icon-wrap {
-  transform: scale(1.1) rotate(-5deg);
-}
-
-.purple-icon {
-  background: rgba(139, 92, 246, 0.12);
-  color: #A78BFA;
-  border-color: rgba(139, 92, 246, 0.25);
+  transform: scale(1.1) rotate(-8deg);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.06);
 }
 
 .card-info {
@@ -282,54 +239,48 @@ function handleHeroMouseLeave() {
 .card-info h3 {
   font-family: 'Sora', sans-serif;
   font-weight: 700;
-  font-size: 16.5px;
+  font-size: 17px;
   margin: 0 0 6px 0;
-  color: #F8FAFC;
+  color: var(--text-900);
   transition: color 0.2s;
 }
 
 .card-tilt:hover .card-info h3 {
-  color: #22D3A8;
-}
-.card-tilt.c-purple:hover .card-info h3 {
-  color: #C4B5FD;
+  color: var(--uth-verde);
 }
 
 .card-info p {
-  font-size: 13px;
-  color: #94A3B8;
+  font-size: 13.5px;
+  color: var(--text-500);
   line-height: 1.5;
   margin: 0;
 }
 
 /* Flechas de navegación animadas */
 .card-arrow-wrap {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  border: 1px solid #1F2937;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #64748B;
+  color: var(--text-500);
   flex-shrink: 0;
-  transition: all 0.25s ease;
+  transition: all 0.25s var(--ease-spring);
 }
 
 .card-tilt:hover .card-arrow-wrap {
-  background: #22D3A8;
-  border-color: #22D3A8;
-  color: #04241C;
-  transform: translateX(4px);
+  background: var(--uth-verde);
+  border-color: var(--uth-verde);
+  color: white;
+  transform: translateX(4px) scale(1.1);
+  box-shadow: 0 4px 10px rgba(0, 182, 79, 0.3);
 }
 
-.card-tilt.c-purple:hover .card-arrow-wrap {
-  background: #8B5CF6;
-  border-color: #8B5CF6;
-  color: #FFFFFF;
-}
-
-@media (max-width: 768px) {
-  .g2 { grid-template-columns: 1fr; }
+/* ---- ANIMACIÓN DE ROTACIÓN LENTA ---- */
+.spin-slow {
+  animation: spin 8s linear infinite;
 }
 </style>
