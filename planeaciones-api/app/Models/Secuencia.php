@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\SecuenciaCambioEstadoNotification;
+use Illuminate\Support\Facades\Log;
 
 class Secuencia extends Model
 {
@@ -19,6 +22,8 @@ class Secuencia extends Model
         'estado',
         'fecha_solicitud_revision',
         'fecha_validacion',
+        'documento_validacion_url',
+        'documento_validacion_origen',
         'activo',
     ];
 
@@ -97,6 +102,8 @@ class Secuencia extends Model
     // Cambia de estado dejando rastro en el historial
     public function cambiarEstado(string $nuevoEstado, User $usuario, ?string $comentario = null): void
     {
+        $estadoAnterior = $this->estado;
+
         $this->historialEstados()->create([
             'estado_anterior' => $this->estado,
             'estado_nuevo' => $nuevoEstado,
@@ -105,5 +112,11 @@ class Secuencia extends Model
         ]);
 
         $this->update(['estado' => $nuevoEstado]);
+
+        $destinatarios = $this->autores()->get();
+
+        Log::info("Enviando notificación de cambio de estado a los autores de la secuencia ID {$usuario->id}.");
+        Log::info("Destinatarios: " . $destinatarios->pluck('email')->implode(', '));
+        Notification::send($destinatarios, new SecuenciaCambioEstadoNotification($this, $estadoAnterior));
     }
 }

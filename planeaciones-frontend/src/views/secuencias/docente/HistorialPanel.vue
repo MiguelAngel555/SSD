@@ -18,20 +18,27 @@
           <tbody>
             <tr v-if="cargando"><td colspan="4" class="sz-sm" style="text-align:center;color:var(--text-300)">Cargando…</td></tr>
             <tr v-else-if="historial.length === 0"><td colspan="4" class="sz-sm" style="text-align:center;color:var(--text-300)">Aún no tienes secuencias validadas.</td></tr>
-            <tr v-for="s in historial" :key="s.id">
+            <tr
+              v-for="s in historial"
+              :key="s.id"
+              class="row-open"
+              title="Doble clic para abrir"
+              @dblclick="abrirEditor(s.id)"
+            >
               <td>{{ s.asignatura?.nombre }}</td>
               <td>{{ s.periodo }}</td>
               <td>{{ formatearFecha(s.fecha_validacion) }}</td>
               <td>
                 <div class="flex ic g2u">
-                  <IconButton title="Ver" @click="abrirEditor(s.id)"><Eye :size="16" /></IconButton>
-                  <IconButton title="Duplicar como nueva" variant="primary" @click="secuenciaADuplicar = s"><Copy :size="16" /></IconButton>
+                  <IconButton title="Ver" @click.stop="abrirEditor(s.id)"><Eye :size="16" /></IconButton>
+                  <IconButton title="Duplicar como nueva" variant="primary" @click.stop="secuenciaADuplicar = s"><Copy :size="16" /></IconButton>
                 </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+      <p v-if="historial.length" class="tbl-hint">Tip: doble clic en una fila para abrir la secuencia.</p>
     </div>
 
     <DuplicarSecuenciaModal

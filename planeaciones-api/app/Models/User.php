@@ -74,4 +74,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(SecuenciaComentario::class);
     }
+
+    public function deviceTokens()
+    {
+        return $this->hasMany(\App\Models\DeviceToken::class);
+    }
+
+    public function routeNotificationForFcm($notification)
+    {
+        // Retorna una cadena con el token, o un array de tokens si un usuario tiene varios dispositivos
+        return $this->deviceTokens()->pluck('fcm_token')->all();
+    }
 }

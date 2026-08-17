@@ -52,7 +52,13 @@
                 No se encontraron especialidades.
               </td>
             </tr>
-            <tr v-for="e in especialidades" :key="e.id">
+            <tr
+              v-for="e in especialidades"
+              :key="e.id"
+              class="row-open"
+              title="Doble clic para abrir"
+              @dblclick="abrirEditar(e)"
+            >
               <td>{{ e.clave }}</td>
               <td>{{ e.nombre }}</td>
               <td>{{ e.carrera?.nombre }}</td>
@@ -63,13 +69,13 @@
               </td>
               <td>
                 <div class="flex ic g2u">
-                  <IconButton title="Editar" @click="abrirEditar(e)">
+                  <IconButton title="Editar" @click.stop="abrirEditar(e)">
                     <Pencil :size="16" />
                   </IconButton>
                   <IconButton
                     :title="e.activo ? 'Desactivar' : 'Activar'"
                     :variant="e.activo ? 'danger' : 'primary'"
-                    @click="toggleActivo(e)"
+                    @click.stop="toggleActivo(e)"
                   >
                     <Power :size="16" />
                   </IconButton>
@@ -79,6 +85,7 @@
           </tbody>
         </table>
       </div>
+      <p v-if="especialidades.length" class="tbl-hint">Tip: doble clic en una fila para editar la especialidad.</p>
 
       <div v-if="paginacion.last_page > 1" class="flex jb ic" style="padding: var(--s4)">
         <span class="sz-sm" style="color:var(--text-300)">

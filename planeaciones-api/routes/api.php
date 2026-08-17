@@ -13,9 +13,11 @@ use App\Http\Controllers\Api\Secuencias\SecuenciaUnidadController;
 use App\Http\Controllers\Api\Secuencias\SecuenciaUnidadEvaluacionController;
 use App\Http\Controllers\Api\Secuencias\SecuenciaUnidadEvidenciaController;
 use App\Http\Controllers\Api\Secuencias\SecuenciaUnidadTemaController;
+use App\Http\Controllers\Api\Secuencias\ValidacionDocumentoController;
 use App\Http\Controllers\Api\TwoFactorController;
 use App\Http\Controllers\Api\Usuario\ConfirmacionCuentaController;
 use App\Http\Controllers\Api\Usuario\UserController;
+use App\Http\Controllers\Api\DeviceTokenController;
 use Illuminate\Support\Facades\Route;
 
 // ── Rutas públicas ──
@@ -34,6 +36,9 @@ Route::post('/confirmar-cuenta', [ConfirmacionCuentaController::class, 'confirma
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+
+    Route::post('/dispositivo/fcm-token', [DeviceTokenController::class, 'store']);
+    Route::delete('/dispositivo/fcm-token', [DeviceTokenController::class, 'destroy']);
 
     // Configuración de 2FA por el propio usuario
     Route::post('/2fa/enable', [TwoFactorController::class, 'enable']);
@@ -68,6 +73,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Compartidas (la autorización fina vive dentro del controlador)
     Route::get('/secuencias/catalogos', [SecuenciaController::class, 'catalogos']);
     Route::get('/secuencias/{secuencia}', [SecuenciaController::class, 'show']);
+    Route::get('/secuencias/{secuencia}/completitud', [SecuenciaController::class, 'completitud']);
 
     // Docente
     Route::middleware('role:Docente')->prefix('docente')->group(function () {
@@ -115,7 +121,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:Director')->prefix('director')->group(function () {
         Route::get('/secuencias', [SecuenciaController::class, 'colaDirector']);
         Route::get('/secuencias/{secuencia}/resumen', [SecuenciaController::class, 'resumen']);
-        Route::post('/secuencias/{secuencia}/validar', [SecuenciaController::class, 'validar']);
+        Route::get('/secuencias/{secuencia}/formato-validacion', [ValidacionDocumentoController::class, 'descargar']);
+        Route::post('/secuencias/{secuencia}/validar', [ValidacionDocumentoController::class, 'subir']);
         Route::post('/secuencias/{secuencia}/rechazar', [SecuenciaController::class, 'rechazar']);
     });
 });

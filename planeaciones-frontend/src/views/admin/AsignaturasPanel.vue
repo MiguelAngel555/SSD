@@ -60,7 +60,13 @@
                 No se encontraron asignaturas.
               </td>
             </tr>
-            <tr v-for="a in asignaturas" :key="a.id">
+            <tr
+              v-for="a in asignaturas"
+              :key="a.id"
+              class="row-open"
+              title="Doble clic para abrir"
+              @dblclick="abrirEditar(a)"
+            >
               <td>{{ a.clave }}</td>
               <td>{{ a.nombre }}</td>
               <td>{{ a.cuatrimestre?.nombre || `Cuatrimestre ${a.cuatrimestre?.numero}` }}</td>
@@ -82,13 +88,13 @@
               </td>
               <td>
                 <div class="flex ic g2u">
-                  <IconButton title="Editar" @click="abrirEditar(a)">
+                  <IconButton title="Editar" @click.stop="abrirEditar(a)">
                     <Pencil :size="16" />
                   </IconButton>
                   <IconButton
                     :title="a.activo ? 'Desactivar' : 'Activar'"
                     :variant="a.activo ? 'danger' : 'primary'"
-                    @click="toggleActivo(a)"
+                    @click.stop="toggleActivo(a)"
                   >
                     <Power :size="16" />
                   </IconButton>
@@ -98,6 +104,7 @@
           </tbody>
         </table>
       </div>
+      <p v-if="asignaturas.length" class="tbl-hint">Tip: doble clic en una fila para editar la asignatura.</p>
 
       <div v-if="paginacion.last_page > 1" class="flex jb ic" style="padding: var(--s4)">
         <span class="sz-sm" style="color:var(--text-300)">
