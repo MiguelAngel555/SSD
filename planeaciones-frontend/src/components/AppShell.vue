@@ -37,10 +37,11 @@
     </aside>
 
     <main class="content">
-      <div class="flex jb ic mb4">
+      <div class="flex jb ic mb4 topbar-greet">
         <span class="sz-sm" style="color: var(--text-300)">
           Hola, <strong style="color: var(--text-700)">{{ auth.user?.nombre_completo }}</strong>
         </span>
+        <div class="greet-avatar" :title="auth.user?.nombre_completo">{{ iniciales }}</div>
       </div>
       <slot />
     </main>
@@ -57,6 +58,18 @@ import router from '@/router'
 const route = useRoute()
 const auth = useAuthStore()
 const menu = computed(() => menuFusionado(auth.roles))
+
+const iniciales = computed(() => {
+  const nombre = auth.user?.nombre_completo || ''
+  return (
+    nombre
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase())
+      .join('') || '?'
+  )
+})
 
 async function onLogout() {
   await auth.logout()
@@ -79,5 +92,26 @@ async function onLogout() {
   background: none;
   cursor: pointer;
   font-family: gotham, 'Roboto', sans-serif;
+}
+.topbar-greet {
+  animation: fadeIn var(--ts) var(--ease) both;
+}
+.greet-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  background: var(--grad-brand);
+  box-shadow: var(--sh-verde);
+  transition: transform var(--ts) var(--ease-spring);
+}
+.greet-avatar:hover {
+  transform: scale(1.08);
 }
 </style>
