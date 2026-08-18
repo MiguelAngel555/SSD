@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -11,44 +10,30 @@ class ResetPasswordNotification extends Notification
 {
     use Queueable;
 
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct()
+    public $token;
+
+    public function __construct($token)
     {
-        //
+        $this->token = $token;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
-    public function via(object $notifiable): array
+    public function via($notifiable)
     {
         return ['mail'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail($notifiable)
     {
-        return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
-    }
+        // URL exacta de tu frontend con la ruta /restablecer-password y los parámetros requeridos
+        $url = "http://localhost:5173/restablecer-password?token={$this->token}&email=" . urlencode($notifiable->email);
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
-    {
-        return [
-            //
-        ];
+        return (new MailMessage)
+            ->subject('Recuperación de Contraseña')
+            ->greeting('¡Hola!')
+            ->line('Estás recibiendo este correo porque recibimos una solicitud de restablecimiento de contraseña para tu cuenta.')
+            ->action('Restablecer Contraseña', $url)
+            ->line('Este enlace de restablecimiento de contraseña expirará en 60 minutos.')
+            ->line('Si no solicitaste un restablecimiento de contraseña, no se requiere ninguna otra acción.')
+            ->salutation('Atentamente, El equipo');
     }
 }
