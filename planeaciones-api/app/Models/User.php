@@ -86,4 +86,9 @@ class User extends Authenticatable
         // Retorna una cadena con el token, o un array de tokens si un usuario tiene varios dispositivos
         return $this->deviceTokens()->pluck('fcm_token')->all();
     }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPasswordNotification());
+    }
 }
