@@ -10,13 +10,13 @@ class ResetPasswordNotification extends Notification
 {
     use Queueable;
 
-    public $token;
+    public $token; // Esta propiedad debe existir
 
-    public function __construct($token)
+    public function __construct($token) // Debe recibir el parámetro
     {
-        $this->token = $token;
+        $this->token = $token; // Debe asignarlo
     }
-
+    
     public function via($notifiable)
     {
         return ['mail'];
