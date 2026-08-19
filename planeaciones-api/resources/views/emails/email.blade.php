@@ -1,15 +1,12 @@
 @component('mail::layout')
 {{-- Header --}}
 @slot('header')
-@component('mail::header', ['url' => config('app.url')])
-{{ config('app.name') }}
-@endcomponent
+    @component('mail::header', ['url' => config('app.url')])
+        <div style="text-align: center;">
+            <img src="{{ asset('img/uth.webp') }}" alt="Logo Universidad" style="max-width: 150px; height: auto;">
+        </div>
+    @endcomponent
 @endslot
-
-{{-- Logo de la institución --}}
-<div style="text-align: center; margin-bottom: 20px;">
-    <img src="/images/uth.webp" alt="Logo Universidad" style="max-width: 150px; height: auto;">
-</div>
 
 {{-- Body --}}
 {{ $slot }}

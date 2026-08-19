@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Carreras\EspecialidadController;
 use App\Http\Controllers\Api\Secuencias\RevisionController;
 use App\Http\Controllers\Api\Secuencias\SecuenciaCaratulaController;
 use App\Http\Controllers\Api\Secuencias\SecuenciaController;
+use App\Http\Controllers\Api\Secuencias\PlaneacionDocumentoController;
 use App\Http\Controllers\Api\Secuencias\SecuenciaFaseActividadController;
 use App\Http\Controllers\Api\Secuencias\SecuenciaReferenciaController;
 use App\Http\Controllers\Api\Secuencias\SecuenciaUnidadController;
@@ -74,6 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/secuencias/catalogos', [SecuenciaController::class, 'catalogos']);
     Route::get('/secuencias/{secuencia}', [SecuenciaController::class, 'show']);
     Route::get('/secuencias/{secuencia}/completitud', [SecuenciaController::class, 'completitud']);
+    Route::get('/secuencias/{secuencia}/documento-planeacion', [PlaneacionDocumentoController::class, 'descargar']);
 
     // Docente
     Route::middleware('role:Docente')->prefix('docente')->group(function () {
