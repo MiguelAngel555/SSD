@@ -17,13 +17,8 @@
       <div class="nav-scroll">
         <div v-for="grupo in menu" :key="grupo.rol" class="nav-sec">
           <div class="nav-lbl">{{ grupo.rol }}</div>
-          <router-link
-            v-for="item in grupo.items"
-            :key="item.routeName"
-            :to="{ name: item.routeName }"
-            class="nav-a pill-nav-3d"
-            :class="{ active: route.name === item.routeName }"
-          >
+          <router-link v-for="item in grupo.items" :key="item.routeName" :to="{ name: item.routeName }"
+            class="nav-a pill-nav-3d" :class="{ active: route.name === item.routeName }">
             <component :is="getItemIcon(item.routeName)" :size="20" class="nav-icon" />
             {{ item.label }}
           </router-link>
@@ -33,11 +28,11 @@
       <!-- FOOTER DEL SIDEBAR (Anclado siempre abajo) -->
       <div class="sidebar-footer">
         <div class="nav-lbl">Mi cuenta</div>
-        
-        <!-- Botón 3D Seguridad -->
-        <router-link :to="{ name: 'perfil-2fa' }" class="nav-a pill-nav-3d" :class="{ active: route.name === 'perfil-2fa' }">
+
+        <!-- Botón 3D Mi perfil -->
+        <router-link :to="{ name: 'perfil' }" class="nav-a pill-nav-3d" :class="{ active: route.name === 'perfil' }">
           <ShieldCheck :size="20" class="nav-icon shield-ic" />
-          Seguridad (2FA)
+          Mi perfil
         </router-link>
 
         <!-- Botón 3D Cerrar sesión (Se aplasta al hacer clic) -->
@@ -120,15 +115,18 @@ async function onLogout() {
 /* ── SIDEBAR ARREGLADA (FIJA A LA PANTALLA) ── */
 .strong-green-sidebar {
   width: 275px;
-  height: 100vh; /* Obliga a la barra a medir exactamente el alto de la pantalla */
-  position: sticky; /* Se queda pegada aunque hagas scroll */
+  height: 100vh;
+  /* Obliga a la barra a medir exactamente el alto de la pantalla */
+  position: sticky;
+  /* Se queda pegada aunque hagas scroll */
   top: 0;
   background: linear-gradient(180deg, #008C3D 0%, #00662C 100%);
   border-right: none;
   display: flex;
   flex-direction: column;
   padding: 24px 18px;
-  box-shadow: 6px 0 30px rgba(0, 110, 48, 0.25), inset -8px 0 20px rgba(0, 0, 0, 0.1); /* Efecto de tubo cilíndrico */
+  box-shadow: 6px 0 30px rgba(0, 110, 48, 0.25), inset -8px 0 20px rgba(0, 0, 0, 0.1);
+  /* Efecto de tubo cilíndrico */
   z-index: 10;
 }
 
@@ -154,10 +152,12 @@ async function onLogout() {
   transform: translateY(-4px);
   transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
 .logo-cube:hover {
   transform: translateY(-6px) rotate(-6deg);
   box-shadow: 0 8px 0 #A7F3D0, 0 16px 25px rgba(0, 0, 0, 0.2);
 }
+
 .logo-cube:active {
   transform: translateY(2px) rotate(0deg);
   box-shadow: 0 0 0 #A7F3D0, 0 4px 6px rgba(0, 0, 0, 0.2);
@@ -172,6 +172,7 @@ async function onLogout() {
   letter-spacing: -0.5px;
   text-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
 }
+
 .brand-sub {
   font-size: 12px;
   font-weight: 700;
@@ -183,9 +184,11 @@ async function onLogout() {
 .nav-scroll {
   flex: 1;
   overflow-y: auto;
-  scrollbar-width: none; /* Oculta la barra de scroll nativa para mayor limpieza */
+  scrollbar-width: none;
+  /* Oculta la barra de scroll nativa para mayor limpieza */
   padding-bottom: 20px;
 }
+
 .nav-scroll::-webkit-scrollbar {
   display: none;
 }
@@ -236,7 +239,10 @@ async function onLogout() {
   box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2), 0 12px 20px rgba(0, 0, 0, 0.2);
   transform: translateY(-4px);
 }
-.pill-nav-3d:hover .nav-icon { color: #FFFFFF; }
+
+.pill-nav-3d:hover .nav-icon {
+  color: #FFFFFF;
+}
 
 /* Efecto Aplastar */
 .pill-nav-3d:active {
@@ -253,7 +259,10 @@ async function onLogout() {
   box-shadow: 0 6px 0 #004D21, 0 12px 20px rgba(0, 0, 0, 0.25);
   transform: translateY(-4px);
 }
-.pill-nav-3d.active .nav-icon { color: #008C3D; }
+
+.pill-nav-3d.active .nav-icon {
+  color: #008C3D;
+}
 
 .pill-nav-3d.active:active {
   transform: translateY(2px);
@@ -279,7 +288,7 @@ async function onLogout() {
   font-weight: 800;
   cursor: pointer;
   margin-top: 8px;
-  
+
   /* Estilo por defecto (Rojo tenue pero 3D) */
   background: rgba(239, 68, 68, 0.15);
   border: 2px solid rgba(239, 68, 68, 0.3);
@@ -304,9 +313,17 @@ async function onLogout() {
   box-shadow: 0 0 0 #991B1B;
 }
 
-.logout-ic { color: #FECACA; }
-.logout-btn-3d-max:hover .logout-ic { color: #FFFFFF; }
-.shield-ic { color: #38BDF8; }
+.logout-ic {
+  color: #FECACA;
+}
+
+.logout-btn-3d-max:hover .logout-ic {
+  color: #FFFFFF;
+}
+
+.shield-ic {
+  color: #38BDF8;
+}
 
 /* ── TOPBAR Y AVATAR ── */
 .topbar-soft {
@@ -317,6 +334,7 @@ async function onLogout() {
   font-size: 16px;
   color: var(--text-900);
 }
+
 .welcome-text strong {
   font-family: 'Sora', sans-serif;
   font-weight: 800;
@@ -342,10 +360,12 @@ async function onLogout() {
   transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
   cursor: pointer;
 }
+
 .greet-avatar:hover {
   transform: translateY(-6px) rotate(5deg);
   box-shadow: 0 8px 0 #007734, 0 15px 25px rgba(0, 0, 0, 0.15);
 }
+
 .greet-avatar:active {
   transform: translateY(2px) rotate(0deg);
   box-shadow: 0 0 0 #007734;
@@ -354,4 +374,4 @@ async function onLogout() {
 .content-body {
   padding: 0 32px 32px 32px;
 }
-</style>
+</style>  

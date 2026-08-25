@@ -16,7 +16,7 @@ class ResetPasswordNotification extends Notification
     {
         $this->token = $token; // Debe asignarlo
     }
-    
+
     public function via($notifiable)
     {
         return ['mail'];
@@ -25,7 +25,8 @@ class ResetPasswordNotification extends Notification
     public function toMail($notifiable)
     {
         // URL exacta de tu frontend con la ruta /restablecer-password y los parámetros requeridos
-        $url = "http://localhost:5173/restablecer-password?token={$this->token}&email=" . urlencode($notifiable->email);
+        $frontendUrl = rtrim((string) config('app.frontend_url'), '/');
+        $url = "{$frontendUrl}/restablecer-password?token={$this->token}&email=" . urlencode($notifiable->email);
 
         return (new MailMessage)
             ->subject('Recuperación de Contraseña')

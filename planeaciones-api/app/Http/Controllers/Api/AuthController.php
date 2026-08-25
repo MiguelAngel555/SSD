@@ -60,7 +60,9 @@ class AuthController extends Controller
                 ]);
             }
 
-            $user->tokens()->delete();
+            // No borramos los tokens previos: el usuario puede tener sesión abierta
+            // en otra pestaña, otro navegador o el reloj WearOS emparejado, y un
+            // login nuevo no debe tumbar esas sesiones.
             $token = $user->createToken('api-token')->plainTextToken;
 
             return response()->json([
@@ -144,7 +146,7 @@ class AuthController extends Controller
     {
         try {
             $request->validate(['email' => ['required', 'email']]);
-            
+
             // Esto buscará al usuario en tu modelo y llamará automáticamente a tu método sendPasswordResetNotification
             Password::sendResetLink($request->only('email'));
 

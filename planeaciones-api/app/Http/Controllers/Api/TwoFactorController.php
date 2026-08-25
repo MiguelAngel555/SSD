@@ -39,7 +39,10 @@ class TwoFactorController extends Controller
                 ])->save();
 
                 $qrUrl = $google2fa->getQRCodeUrl(config('app.name'), $user->email, $secret);
-                $qrSvg = QrCode::size(200)->generate($qrUrl);
+                // QrCode::generate() regresa un HtmlString (objeto), no un string plano.
+                // Si se manda tal cual en el JSON se serializa como {} y el frontend
+                // termina mostrando "[object Object]" en vez del SVG. Forzamos el cast.
+                $qrSvg = (string) QrCode::size(200)->generate($qrUrl);
 
                 return response()->json([
                     'method' => 'app',
@@ -179,7 +182,8 @@ class TwoFactorController extends Controller
             $challenge->delete();
             TwoFactorCode::where('user_id', $user->id)->delete();
 
-            $user->tokens()->delete();
+            // Igual que en el login sin 2FA: no borramos tokens previos de otras
+            // sesiones/dispositivos activos, solo emitimos uno nuevo para este login.
             $token = $user->createToken('api-token')->plainTextToken;
 
             return response()->json([
@@ -287,3 +291,4 @@ class TwoFactorController extends Controller
         return false;
     }
 }
+    

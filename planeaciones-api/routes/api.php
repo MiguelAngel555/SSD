@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\Secuencias\SecuenciaUnidadEvidenciaController;
 use App\Http\Controllers\Api\Secuencias\SecuenciaUnidadTemaController;
 use App\Http\Controllers\Api\Secuencias\ValidacionDocumentoController;
 use App\Http\Controllers\Api\TwoFactorController;
+use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\Usuario\ConfirmacionCuentaController;
 use App\Http\Controllers\Api\Usuario\UserController;
 use App\Http\Controllers\Api\DeviceTokenController;
@@ -40,6 +41,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/dispositivo/fcm-token', [DeviceTokenController::class, 'store']);
     Route::delete('/dispositivo/fcm-token', [DeviceTokenController::class, 'destroy']);
+
+    // Perfil del propio usuario (datos personales y contraseña)
+    Route::get('/perfil', [ProfileController::class, 'show']);
+    Route::put('/perfil', [ProfileController::class, 'update']);
+    Route::put('/perfil/password', [ProfileController::class, 'updatePassword']);
 
     // Configuración de 2FA por el propio usuario
     Route::post('/2fa/enable', [TwoFactorController::class, 'enable']);

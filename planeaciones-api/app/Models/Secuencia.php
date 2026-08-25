@@ -115,6 +115,16 @@ class Secuencia extends Model
 
         $destinatarios = $this->autores()->get();
 
+        // Cuando la secuencia entra a validación, el director de la carrera
+        // también debe enterarse: es quien tiene que revisarla/firmarla.
+        if ($nuevoEstado === 'en_proceso_validacion') {
+            $director = $this->carrera?->director;
+
+            if ($director && ! $destinatarios->contains('id', $director->id)) {
+                $destinatarios->push($director);
+            }
+        }
+
         Log::info("Enviando notificación de cambio de estado a los autores de la secuencia ID {$usuario->id}.");
         Log::info("Destinatarios: " . $destinatarios->pluck('email')->implode(', '));
         Notification::send($destinatarios, new SecuenciaCambioEstadoNotification($this, $estadoAnterior));

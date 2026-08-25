@@ -5,7 +5,7 @@ import LoginView from '@/views/LoginView.vue'
 import ForgotPasswordView from '@/views/ForgotPasswordView.vue'
 import ResetPasswordView from '@/views/ResetPasswordView.vue'
 import TwoFactorChallengeView from '@/views/TwoFactorChallengeView.vue'
-import TwoFactorSettingsView from '@/views/TwoFactorSettingsView.vue'
+import PerfilView from '@/views/PerfilView.vue'
 import ConfirmarCuentaView from '@/views/ConfirmarCuentaView.vue'
 import AdminHome from '@/views/homes/AdminHome.vue'
 import AcademicoView from '@/views/admin/AcademicoView.vue'
@@ -45,8 +45,11 @@ const routes = [
     meta: { requiresAuth: true, roles: ['Docente', 'Revisor', 'Administrador'] },
   },
 
-  // Cualquier usuario autenticado, sin importar su rol, puede configurar su propio 2FA
-  { path: '/perfil/2fa', name: 'perfil-2fa', component: TwoFactorSettingsView, meta: { requiresAuth: true } },
+  // Cualquier usuario autenticado, sin importar su rol, puede ver/editar su perfil
+  // (datos, contraseña y 2FA viven todos aquí).
+  { path: '/perfil', name: 'perfil', component: PerfilView, meta: { requiresAuth: true } },
+  // La ruta vieja del 2FA ahora redirige aquí, por si quedó algún enlace guardado.
+  { path: '/perfil/2fa', redirect: { name: 'perfil' } },
 ]
 
 const router = createRouter({
