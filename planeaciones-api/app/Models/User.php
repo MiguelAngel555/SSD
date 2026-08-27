@@ -65,6 +65,18 @@ class User extends Authenticatable
         return $this->hasOne(Carrera::class, 'director_id');
     }
 
+    // Secretario: carrera en la que funge como secretario (uno a uno)
+    public function carreraSecretariada()
+    {
+        return $this->hasOne(Carrera::class, 'secretario_id');
+    }
+
+    // Revisor: cuatrimestres/carreras que tiene asignados para revisar
+    public function asignacionesRevisor()
+    {
+        return $this->hasMany(RevisorAsignacion::class, 'revisor_id');
+    }
+
     // Secuencias en las que es autor
     public function secuencias()
     {

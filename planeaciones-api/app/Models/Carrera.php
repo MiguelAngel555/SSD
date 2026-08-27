@@ -11,11 +11,16 @@ class Carrera extends Model
     
     use SoftDeletes;
 
-    protected $fillable = ['nombre', 'clave', 'director_id', 'activo'];
+    protected $fillable = ['nombre', 'clave', 'director_id', 'secretario_id', 'activo'];
 
     public function director()
     {
         return $this->belongsTo(User::class, 'director_id');
+    }
+
+    public function secretario()
+    {
+        return $this->belongsTo(User::class, 'secretario_id');
     }
 
     public function especialidades()

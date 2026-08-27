@@ -28,7 +28,7 @@
 
         body {
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 9.5px;
+            font-size: 11px;
             color: #000;
         }
 
@@ -53,14 +53,14 @@
         }
 
         .hdr-text h1 {
-            font-size: 12px;
+            font-size: 14px;
             margin: 0;
             color: #222;
             font-weight: bold;
         }
 
         .hdr-text h2 {
-            font-size: 8.5px;
+            font-size: 9.5px;
             margin: 2px 0 0;
             color: #444;
             font-weight: normal;
@@ -68,7 +68,7 @@
 
         .hdr-title {
             text-align: center;
-            font-size: 10.5px;
+            font-size: 13px;
             font-weight: bold;
             margin-top: 6px;
             text-transform: uppercase;
@@ -88,7 +88,7 @@
         }
 
         .top-lbl {
-            font-size: 8.5px;
+            font-size: 9.5px;
             font-weight: bold;
             color: #000;
         }
@@ -96,7 +96,7 @@
         .top-value {
             border-bottom: 1px solid #000;
             min-height: 14px;
-            font-size: 9px;
+            font-size: 10.5px;
             text-align: center;
             padding-bottom: 1px;
         }
@@ -109,8 +109,8 @@
 
         .periodo-box td {
             border: 1px solid #000;
-            padding: 2px 4px;
-            font-size: 8px;
+            padding: 3px 5px;
+            font-size: 9.5px;
             height: 11px;
         }
 
@@ -137,8 +137,8 @@
             /* Verde institucional exacto */
             color: #000;
             border: 1px solid #000;
-            padding: 5px 3px;
-            font-size: 8.5px;
+            padding: 6px 4px;
+            font-size: 10px;
             text-align: center;
             font-weight: bold;
         }
@@ -147,7 +147,7 @@
             border: 1px solid #000;
             padding: 0;
             /* Controlamos el padding internamente */
-            font-size: 8.5px;
+            font-size: 10px;
             vertical-align: middle;
         }
 
@@ -194,8 +194,8 @@
 
         table.entrega-nested td {
             border: 1px solid #000;
-            padding: 2px 3px;
-            font-size: 8px;
+            padding: 3px 5px;
+            font-size: 9.5px;
             vertical-align: middle;
         }
 
@@ -221,7 +221,7 @@
 
         .firma-docente-cell {
             text-align: center;
-            font-size: 7.5px;
+            font-size: 9px;
             width: 28%;
             vertical-align: middle;
             color: #222;
@@ -335,7 +335,7 @@
         <tr>
             <td class="top-lbl" style="padding-top: 6px;">Nombre del PTC<br>que valida</td>
             <td style="padding-top: 6px;">
-                <div class="top-value">{{ auth()->user()?->nombre_completo }}</div>
+                <div class="top-value">{{ $nombrePtc }}</div>
             </td>
             <td class="top-lbl" style="text-align: right; padding-right: 8px; padding-top: 6px;">Año</td>
             <td style="padding-top: 6px;">
@@ -390,8 +390,8 @@
                 </td>
                 <td class="col-fechaval col-pad">{{ now()->format('d/m/Y') }}</td>
                 <td class="col-firmaptc col-pad">
-                    @if($firmaBase64)
-                    <img src="{{ $firmaBase64 }}" style="max-width:90%;max-height:28px">
+                    @if($firmaPtcBase64)
+                    <img src="{{ $firmaPtcBase64 }}" style="max-width:90%;max-height:28px">
                     @else
                     <div class="firma-linea-ptc"></div>
                     @endif
@@ -401,10 +401,12 @@
     </table>
 
     <!-- ═══ Firma Director de Carrera ═══ -->
+    <!-- Independiente de la firma del PTC: el director dibuja la suya al
+         validar, o queda en blanco para firmar a mano sobre el documento. -->
     <div class="seccion-director">
         <div class="firma-director-caja">
-            @if($firmaBase64)
-            <img class="firma-director-img" src="{{ $firmaBase64 }}">
+            @if($firmaDirectorBase64)
+            <img class="firma-director-img" src="{{ $firmaDirectorBase64 }}">
             @else
             <div style="height: 35px;"></div>
             @endif

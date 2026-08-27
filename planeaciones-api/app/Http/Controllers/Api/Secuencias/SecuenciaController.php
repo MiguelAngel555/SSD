@@ -83,9 +83,22 @@ class SecuenciaController extends Controller
                 }
             }
 
+            $asignaciones = $request->user()->asignacionesRevisor()->get(['carrera_id', 'cuatrimestre_id']);
+
             $secuencias = Secuencia::query()
                 ->with(['asignatura', 'especialidad', 'carrera', 'autores'])
                 ->where('estado', 'en_revision')
+                ->when($asignaciones->isEmpty(), fn ($q) => $q->whereRaw('1 = 0'))
+                ->when($asignaciones->isNotEmpty(), function ($q) use ($asignaciones) {
+                    $q->where(function ($qq) use ($asignaciones) {
+                        foreach ($asignaciones as $a) {
+                            $qq->orWhere(function ($sub) use ($a) {
+                                $sub->where('carrera_id', $a->carrera_id)
+                                    ->whereHas('asignatura', fn ($aq) => $aq->where('cuatrimestre_id', $a->cuatrimestre_id));
+                            });
+                        }
+                    });
+                })
                 ->orderBy('fecha_solicitud_revision')
                 ->get();
 
@@ -344,7 +357,7 @@ class SecuenciaController extends Controller
                 return response()->json(['message' => 'No diriges la carrera de esta secuencia.'], 403);
             }
 
-            $secuencia->load(['asignatura', 'especialidad', 'carrera', 'autores', 'grupos', 'caratula', 'unidades']);
+            $secuencia->load(['asignatura', 'especialidad', 'carrera', 'autores', 'grupos', 'caratula', 'unidades', 'revisorValidacion']);
 
             return response()->json($secuencia);
         } catch (Throwable $e) {
@@ -416,10 +429,19 @@ class SecuenciaController extends Controller
 
     /**
      * POST /api/revisor/secuencias/{secuencia}/enviar-validacion
+     * body opcional: { firma_digital: PNG en base64 }. Si el revisor firma
+     * aquí, esa firma queda ligada a la secuencia y se reutiliza tal cual
+     * en el documento final de validación (el Director ya no firma por él).
      */
     public function enviarValidacion(Request $request, Secuencia $secuencia)
     {
-        return $this->cambiarEstado($request, $secuencia, 'en_revision', 'en_proceso_validacion');
+        $data = $request->validate(['firma_digital' => ['nullable', 'string']]);
+
+        return $this->cambiarEstado($request, $secuencia, 'en_revision', 'en_proceso_validacion', function () use ($request, $secuencia, $data) {
+            $secuencia->revisor_validacion_id = $request->user()->id;
+            $secuencia->revisor_firma_digital = $data['firma_digital'] ?? null;
+            $secuencia->save();
+        });
     }
 
     /**

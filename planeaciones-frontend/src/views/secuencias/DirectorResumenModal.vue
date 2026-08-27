@@ -1,11 +1,11 @@
 <template>
-  <Modal titulo="Resumen de la secuencia" @close="$emit('close')">
+  <Modal titulo="Secuencia didáctica" @close="$emit('close')">
     <div v-if="cargando" class="sz-sm" style="text-align:center;color:var(--text-300)">Cargando…</div>
 
     <template v-else-if="secuencia">
       <div v-if="mensajeError" class="alert a-danger mb4">{{ mensajeError }}</div>
 
-      <div class="resumen-header mb4">
+      <div class="resumen-header mb3">
         <div>
           <h3 class="ht-sm">{{ secuencia.asignatura?.nombre }}</h3>
           <p class="sz-xs" style="color:var(--text-300)">{{ secuencia.especialidad?.nombre }} · {{ secuencia.periodo }}</p>
@@ -13,21 +13,16 @@
         <span :class="['estado-badge', badgeEstado(secuencia.estado)]">{{ etiquetaEstado(secuencia.estado) }}</span>
       </div>
 
-      <div class="field-row mb3">
-        <div class="field"><label class="fl">Docente(s)</label><p class="sz-sm">{{ secuencia.autores.map(a => a.nombre_completo).join(', ') }}</p></div>
-        <div class="field"><label class="fl">Grupo(s)</label><p class="sz-sm">{{ secuencia.grupos.map(g => g.grupo).join(', ') || '—' }}</p></div>
+      <!-- ═══ PDF real de la secuencia (reemplaza al resumen textual) ═══ -->
+      <div class="pdf-preview mb4">
+        <div v-if="cargandoPdf" class="sz-sm" style="text-align:center;padding:40px 0;color:var(--text-300)">
+          Cargando documento…
+        </div>
+        <iframe v-else-if="pdfUrl" :src="pdfUrl" class="pdf-frame" title="PDF de la secuencia"></iframe>
+        <div v-else class="sz-sm" style="text-align:center;padding:40px 0;color:var(--text-300)">
+          No se pudo cargar el PDF de la secuencia.
+        </div>
       </div>
-
-      <div class="field mb3">
-        <label class="fl">Propósito</label>
-        <p class="sz-sm">{{ secuencia.caratula?.proposito_aprendizaje || '—' }}</p>
-      </div>
-      <div class="field mb3">
-        <label class="fl">Competencia</label>
-        <p class="sz-sm">{{ secuencia.caratula?.competencia || '—' }}</p>
-      </div>
-
-      <p class="sz-sm mb3"><strong>{{ secuencia.unidades.length }}</strong> unidades de aprendizaje registradas.</p>
 
       <!-- ═══ Ya validada: solo mostrar el documento firmado ═══ -->
       <div v-if="secuencia.estado === 'validada'" class="alert a-success">
@@ -36,40 +31,55 @@
           rel="noopener" style="font-weight:600;margin-left:4px">Ver documento firmado</a>
       </div>
 
-      <!-- ═══ En proceso de validación: flujo de descarga → firma → subida ═══ -->
+      <!-- ═══ En proceso de validación ═══ -->
       <template v-else-if="secuencia.estado === 'en_proceso_validacion'">
         <div class="field mb3">
           <label class="fl">1. Descarga el formato de validación</label>
           <p class="sz-xs mb2" style="color:var(--text-300)">
-            Es el PDF oficial (UTH-ACA-DC-F-PVSD/14) con los datos de esta secuencia ya prellenados.
+            Es el PDF oficial (UTH-ACA-DC-F-PVSD/14) con los datos de esta secuencia ya prellenados
+            <span v-if="secuencia.revisor_firma_digital">y la firma digital del revisor ya estampada.</span>
           </p>
           <button class="btn btn-outline btn-sm" :disabled="descargando" @click="descargarFormato">
             <Download :size="14" style="margin-right:4px" /> {{ descargando ? 'Descargando…' : 'Descargar formato' }}
           </button>
         </div>
 
+        <div v-if="secuencia.revisor_firma_digital" class="alert" style="margin-bottom:var(--s3)">
+          <strong>{{ secuencia.revisor_validacion?.nombre_completo || 'El revisor' }}</strong> ya firmó
+          digitalmente este documento como PTC al enviarlo a validación.
+        </div>
+
+        <!-- El Director firma digitalmente su propia sección del PDF,
+             independiente de la firma del PTC/revisor. -->
         <div class="field mb3">
-          <label class="fl">2. Firma y sube el documento de validación</label>
+          <label class="fl">2. Firma digitalmente como Director (opcional)</label>
+          <p class="sz-xs mb2" style="color:var(--text-300)">
+            Dibuja tu firma para estamparla en la sección "Firma del director de carrera" del documento final.
+          </p>
+          <FirmaDigitalPad ref="firmaPadRef" v-model="firmaDigitalDirector" :disabled="!!archivoFirmado" />
+        </div>
 
-          <div class="firma-tabs mb2">
-            <button type="button" class="btn btn-sm" :class="modoFirma === 'archivo' ? 'btn-primary' : 'btn-ghost'"
-              @click="modoFirma = 'archivo'">Subir archivo firmado</button>
-            <button type="button" class="btn btn-sm" :class="modoFirma === 'digital' ? 'btn-primary' : 'btn-ghost'"
-              @click="modoFirma = 'digital'">Firmar digitalmente</button>
-          </div>
+        <!-- Alternativa: subir el documento ya firmado a mano/escaneado.
+             Si se sube un archivo, gana sobre cualquier firma digital. -->
+        <div class="field mb3">
+          <label class="fl">O sube el documento ya firmado</label>
+          <p class="sz-xs mb2" style="color:var(--text-300)">
+            Imprime, firma y escanea (o firma en PDF) el formato descargado, y súbelo aquí en vez de firmar arriba.
+          </p>
 
-          <div v-if="modoFirma === 'archivo'">
-            <p class="sz-xs mb2" style="color:var(--text-300)">
-              Imprime, firma y escanea (o firma en PDF) el formato descargado, y súbelo aquí (PDF, JPG o PNG).
-            </p>
-            <input type="file" accept=".pdf,.jpg,.jpeg,.png" class="input" @change="onArchivoSeleccionado" />
-          </div>
-
-          <div v-else>
-            <p class="sz-xs mb2" style="color:var(--text-300)">
-              Tu firma se estampará automáticamente sobre el formato de validación para generar el PDF final.
-            </p>
-            <FirmaDigitalPad ref="firmaPadRef" v-model="firmaDigital" />
+          <div class="file-upload-3d" :class="{ 'has-file': archivoFirmado }">
+            <input type="file" id="doc-validacion-upload" accept=".pdf,.jpg,.jpeg,.png" class="hidden-input"
+              @change="onArchivoSeleccionado" />
+            <label for="doc-validacion-upload" class="file-label">
+              <div class="file-icon-wrap">
+                <UploadCloud v-if="!archivoFirmado" :size="24" />
+                <FileCheck v-else :size="24" color="#00B64F" />
+              </div>
+              <div class="file-text">
+                <span class="file-title">{{ archivoFirmado ? archivoFirmado.name : 'Subir documento firmado' }}</span>
+                <span class="file-desc">{{ archivoFirmado ? 'Clic para reemplazar' : 'PDF, JPG o PNG · máx. 10MB' }}</span>
+              </div>
+            </label>
           </div>
         </div>
       </template>
@@ -93,8 +103,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { Download } from 'lucide-vue-next'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { Download, UploadCloud, FileCheck } from 'lucide-vue-next'
 import Modal from '@/components/Modal.vue'
 import FirmaDigitalPad from '@/components/FirmaDigitalPad.vue'
 import api from '@/services/api'
@@ -109,29 +119,59 @@ const procesando = ref(false)
 const descargando = ref(false)
 const mensajeError = ref('')
 
-const modoFirma = ref('archivo')
+const cargandoPdf = ref(true)
+const pdfUrl = ref(null)
 const archivoFirmado = ref(null)
-const firmaDigital = ref(null)
+const firmaDigitalDirector = ref(null)
 const firmaPadRef = ref(null)
 
+// Se puede validar si: el revisor ya firmó digital como PTC (el Director
+// solo confirma), o el Director firma digitalmente ahora, o se sube un
+// documento ya firmado.
 const puedeValidar = computed(() => {
-  if (modoFirma.value === 'archivo') return !!archivoFirmado.value
-  return !!firmaDigital.value
+  if (archivoFirmado.value) return true
+  if (firmaDigitalDirector.value) return true
+  return !!secuencia.value?.revisor_firma_digital
 })
 
 onMounted(async () => {
   try {
     const { data } = await api.get(`/director/secuencias/${props.secuenciaId}/resumen`)
     secuencia.value = data
+    cargarPdf()
   } catch (e) {
-    mensajeError.value = e.response?.data?.message || 'No se pudo cargar el resumen.'
+    mensajeError.value = e.response?.data?.message || 'No se pudo cargar la secuencia.'
   } finally {
     cargando.value = false
   }
 })
 
+onBeforeUnmount(() => {
+  if (pdfUrl.value) window.URL.revokeObjectURL(pdfUrl.value)
+})
+
+async function cargarPdf() {
+  cargandoPdf.value = true
+  try {
+    const { data } = await api.get(`/secuencias/${props.secuenciaId}/documento-planeacion`, {
+      responseType: 'blob',
+    })
+    pdfUrl.value = window.URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
+  } catch (e) {
+    pdfUrl.value = null
+  } finally {
+    cargandoPdf.value = false
+  }
+}
+
 function onArchivoSeleccionado(evento) {
   archivoFirmado.value = evento.target.files[0] || null
+  // Un archivo subido siempre gana sobre la firma digital dibujada: no
+  // tiene sentido combinarlos.
+  if (archivoFirmado.value) {
+    firmaDigitalDirector.value = null
+    firmaPadRef.value?.limpiar?.()
+  }
 }
 
 async function descargarFormato() {
@@ -161,10 +201,11 @@ async function validar() {
   mensajeError.value = ''
   try {
     const fd = new FormData()
-    if (modoFirma.value === 'archivo') {
+    if (archivoFirmado.value) {
+      // El archivo subido gana sobre cualquier firma digital.
       fd.append('documento', archivoFirmado.value)
-    } else {
-      fd.append('firma_digital', firmaDigital.value)
+    } else if (firmaDigitalDirector.value) {
+      fd.append('firma_digital', firmaDigitalDirector.value)
     }
     if (comentario.value) fd.append('comentario', comentario.value)
 
@@ -209,5 +250,26 @@ function etiquetaEstado(estado) {
 .mb3 { margin-bottom: var(--s3); }
 .mt3 { margin-top: var(--s3); }
 .mb2 { margin-bottom: var(--s2, 8px); }
-.firma-tabs { display: flex; gap: 8px; }
+.pdf-frame { width: 100%; height: 420px; border: 1px solid var(--border); border-radius: var(--r-md); }
+
+.file-upload-3d {
+  position: relative;
+  border: 2px dashed var(--border);
+  border-radius: var(--r-md);
+  background: #FFFFFF;
+  transition: all 0.2s;
+}
+.file-upload-3d:hover { border-color: var(--uth-verde-claro); background: rgba(0, 182, 79, 0.02); }
+.file-upload-3d.has-file { border-style: solid; border-color: rgba(0, 182, 79, 0.3); background: rgba(0, 182, 79, 0.05); }
+.hidden-input { position: absolute; width: 0; height: 0; opacity: 0; }
+.file-label { display: flex; align-items: center; gap: 16px; padding: 16px; cursor: pointer; width: 100%; }
+.file-icon-wrap {
+  width: 40px; height: 40px; background: var(--bg-soft); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; color: var(--text-500);
+}
+.has-file .file-icon-wrap { background: #FFFFFF; box-shadow: 0 4px 10px rgba(0, 182, 79, 0.15); }
+.file-text { display: flex; flex-direction: column; }
+.file-title { font-weight: 800; font-size: 14px; color: var(--text-900); }
+.file-desc { font-size: 12px; color: var(--text-400); }
+.has-file .file-title { color: var(--uth-verde); }
 </style>

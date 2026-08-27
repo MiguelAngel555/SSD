@@ -51,11 +51,18 @@ class ValidacionDocumentoController extends Controller
 
     /**
      * POST /api/director/secuencias/{secuencia}/validar
-     * multipart/form-data con UNO de los dos:
-     *   - documento: el formato ya firmado (PDF, JPG o PNG), o
-     *   - firma_digital: PNG en base64 (data URL) dibujado en el navegador,
-     *     con el que se genera el PDF final ya con la firma estampada.
+     * multipart/form-data con:
+     *   - documento (opcional): el formato ya firmado (PDF, JPG o PNG). Si
+     *     se sube, se usa tal cual y gana sobre cualquier firma digital.
+     *   - firma_digital (opcional): PNG en base64 (data URL) que el propio
+     *     Director dibuja en el navegador al validar. Se estampa SOLO en la
+     *     sección "Firma del director de carrera", nunca en la del PTC.
      * + comentario (opcional).
+     *
+     * Debe llegar al menos una firma para el Director: la del revisor ya
+     * guardada (revisor_firma_digital, con el Director solo confirmando),
+     * la firma digital del propio Director en este request, o un documento
+     * subido.
      */
     public function subir(Request $request, Secuencia $secuencia)
     {
@@ -66,19 +73,35 @@ class ValidacionDocumentoController extends Controller
                 return response()->json(['message' => "La secuencia ya no está en estado 'en_proceso_validacion'."], 422);
             }
 
-            $data = $request->validate([
-                'documento' => ['required_without:firma_digital', 'nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
-                'firma_digital' => ['required_without:documento', 'nullable', 'string'],
-                'comentario' => ['nullable', 'string', 'max:1000'],
-            ]);
-
             $carpeta = "validaciones/secuencia-{$secuencia->id}";
 
-            if ($request->hasFile('documento')) {
+            $tieneDocumento = $request->hasFile('documento');
+            $tieneFirmaDirector = filled($request->input('firma_digital'));
+            $tieneFirmaRevisor = filled($secuencia->revisor_firma_digital);
+
+            if (!$tieneDocumento && !$tieneFirmaDirector && !$tieneFirmaRevisor) {
+                throw ValidationException::withMessages([
+                    'documento' => 'Sube el documento firmado o firma digitalmente antes de validar.',
+                ]);
+            }
+
+            if ($tieneDocumento) {
+                // Un archivo subido siempre gana: ya viene firmado a mano o
+                // escaneado, no tiene sentido combinarlo con firmas digitales.
+                $data = $request->validate([
+                    'documento' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+                    'comentario' => ['nullable', 'string', 'max:1000'],
+                ]);
                 $ruta = $request->file('documento')->store($carpeta, 'public');
                 $origen = 'archivo_subido';
+                $directorFirmaGuardar = null;
             } else {
-                $ruta = $this->guardarPdfConFirmaDigital($secuencia, $data['firma_digital'], $carpeta);
+                $data = $request->validate([
+                    'firma_digital' => ['nullable', 'string'],
+                    'comentario' => ['nullable', 'string', 'max:1000'],
+                ]);
+                $directorFirmaGuardar = $data['firma_digital'] ?? null;
+                $ruta = $this->guardarPdfConFirmasDigitales($secuencia, $directorFirmaGuardar, $carpeta);
                 $origen = 'firma_digital';
             }
 
@@ -87,6 +110,7 @@ class ValidacionDocumentoController extends Controller
                 'fecha_validacion' => now(),
                 'documento_validacion_url' => Storage::disk('public')->url($ruta),
                 'documento_validacion_origen' => $origen,
+                'director_firma_digital' => $directorFirmaGuardar,
             ]);
 
             return response()->json($secuencia->fresh(['asignatura', 'especialidad', 'carrera']));
@@ -115,10 +139,14 @@ class ValidacionDocumentoController extends Controller
      * Arma el PDF real (con membrete UTH y pie de página con código/revisión)
      * a partir de la plantilla Blade. Requiere barryvdh/laravel-dompdf
      * (composer require barryvdh/laravel-dompdf).
+     *
+     * Las dos firmas son independientes: la del PTC/revisor va en la celda
+     * "Firma de PTC" de la tabla, y la del Director va únicamente en la
+     * sección "Firma del director de carrera". Ninguna reemplaza a la otra.
      */
-    private function generarPdf(Secuencia $secuencia, ?string $firmaBase64 = null)
+    private function generarPdf(Secuencia $secuencia, ?string $firmaDirectorBase64 = null)
     {
-        $secuencia->loadMissing(['asignatura.cuatrimestre', 'especialidad', 'carrera', 'autores', 'grupos']);
+        $secuencia->loadMissing(['asignatura.cuatrimestre', 'especialidad', 'carrera', 'autores', 'grupos', 'revisorValidacion']);
 
         // El campo "periodo" se guarda como "Mayo - Agosto 2026": separamos
         // el cuatrimestre (para marcar el checkbox correcto) del año.
@@ -129,18 +157,24 @@ class ValidacionDocumentoController extends Controller
         $logo = public_path('img/uth.webp');
         $logoPath = file_exists($logo) ? $logo : null;
 
+        // El "PTC que valida" es el Revisor que trabajó la secuencia, no
+        // quien esté generando/descargando el PDF (normalmente el Director).
+        $nombrePtc = $secuencia->revisorValidacion?->nombre_completo ?? '—';
+
         return \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.validacion-secuencia', [
             'secuencia' => $secuencia,
-            'firmaBase64' => $firmaBase64,
+            'firmaPtcBase64' => $secuencia->revisor_firma_digital,
+            'firmaDirectorBase64' => $firmaDirectorBase64 ?? $secuencia->director_firma_digital,
+            'nombrePtc' => $nombrePtc,
             'cuatrimestreLabel' => $cuatrimestreLabel,
             'anioPeriodo' => $anioPeriodo,
             'logoPath' => $logoPath,
-        ])->setPaper('letter');
+        ])->setPaper('letter', 'landscape');
     }
 
-    private function guardarPdfConFirmaDigital(Secuencia $secuencia, string $firmaBase64, string $carpeta): string
+    private function guardarPdfConFirmasDigitales(Secuencia $secuencia, ?string $firmaDirectorBase64, string $carpeta): string
     {
-        $pdf = $this->generarPdf($secuencia, $firmaBase64);
+        $pdf = $this->generarPdf($secuencia, $firmaDirectorBase64);
 
         $ruta = "{$carpeta}/" . uniqid('validacion_firma_') . '.pdf';
         Storage::disk('public')->put($ruta, $pdf->output());

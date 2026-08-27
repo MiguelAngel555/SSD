@@ -63,6 +63,16 @@
       <p class="fh">Solo se listan carreras sin director asignado (o la que ya dirige, si estás editando).</p>
     </div>
 
+    <!-- Secretario: carrera en la que funge como secretario -->
+    <div v-if="esSecretario" class="field">
+      <label class="fl">Carrera en la que es secretario</label>
+      <select v-model="form.carrera_id_secretario" class="input">
+        <option :value="null">Sin asignar</option>
+        <option v-for="c in carrerasDisponiblesParaSecretario" :key="c.id" :value="c.id">{{ c.nombre }}</option>
+      </select>
+      <p class="fh">Solo se listan carreras sin secretario asignado (o la que ya tiene, si estás editando).</p>
+    </div>
+
     <template #footer>
       <button class="btn btn-ghost" @click="$emit('close')">Cancelar</button>
       <button class="btn btn-primary" :disabled="guardando" @click="guardar">
@@ -91,6 +101,7 @@ const form = reactive({
   rol_ids: props.usuario?.roles?.map((r) => r.id) ?? [],
   asignatura_ids: props.usuario?.asignaturas?.map((a) => a.id) ?? [],
   carrera_id: props.usuario?.carreraDirigida?.id ?? null,
+  carrera_id_secretario: props.usuario?.carreraSecretariada?.id ?? null,
 })
 
 const guardando = ref(false)
@@ -101,10 +112,17 @@ const nombresRolesSeleccionados = computed(() =>
 )
 const esDocente = computed(() => nombresRolesSeleccionados.value.includes('Docente'))
 const esDirector = computed(() => nombresRolesSeleccionados.value.includes('Director'))
+const esSecretario = computed(() => nombresRolesSeleccionados.value.includes('Secretario'))
 
 const carrerasDisponiblesParaDirector = computed(() =>
   props.catalogos.carreras.filter(
     (c) => !c.director_id || c.director_id === props.usuario?.id
+  )
+)
+
+const carrerasDisponiblesParaSecretario = computed(() =>
+  props.catalogos.carreras.filter(
+    (c) => !c.secretario_id || c.secretario_id === props.usuario?.id
   )
 )
 
@@ -120,6 +138,7 @@ async function guardar() {
       rol_ids: form.rol_ids,
       asignatura_ids: esDocente.value ? form.asignatura_ids : [],
       carrera_id: esDirector.value ? form.carrera_id : null,
+      carrera_id_secretario: esSecretario.value ? form.carrera_id_secretario : null,
     }
 
     if (props.usuario) {

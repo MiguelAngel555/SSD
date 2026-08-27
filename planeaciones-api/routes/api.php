@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Carreras\CarreraController;
 use App\Http\Controllers\Api\Carreras\EspecialidadController;
 use App\Http\Controllers\Api\Secuencias\RevisionController;
+use App\Http\Controllers\Api\Secuencias\RevisorAsignacionController;
 use App\Http\Controllers\Api\Secuencias\SecuenciaCaratulaController;
 use App\Http\Controllers\Api\Secuencias\SecuenciaController;
 use App\Http\Controllers\Api\Secuencias\PlaneacionDocumentoController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Api\Secuencias\ValidacionDocumentoController;
 use App\Http\Controllers\Api\TwoFactorController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\Usuario\ConfirmacionCuentaController;
+use App\Http\Controllers\Api\Usuario\DocenteCarreraController;
 use App\Http\Controllers\Api\Usuario\UserController;
 use App\Http\Controllers\Api\DeviceTokenController;
 use Illuminate\Support\Facades\Route;
@@ -132,5 +134,21 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/secuencias/{secuencia}/formato-validacion', [ValidacionDocumentoController::class, 'descargar']);
         Route::post('/secuencias/{secuencia}/validar', [ValidacionDocumentoController::class, 'subir']);
         Route::post('/secuencias/{secuencia}/rechazar', [SecuenciaController::class, 'rechazar']);
+    });
+
+    // Asignación de revisores (Admin: cualquier carrera; Director/Secretario: solo la suya)
+    Route::middleware('role:Administrador,Director,Secretario')->group(function () {
+        Route::get('/revisor-asignaciones', [RevisorAsignacionController::class, 'index']);
+        Route::get('/revisor-asignaciones/catalogos', [RevisorAsignacionController::class, 'catalogos']);
+        Route::post('/revisor-asignaciones', [RevisorAsignacionController::class, 'store']);
+        Route::delete('/revisor-asignaciones/{asignacion}', [RevisorAsignacionController::class, 'destroy']);
+    });
+
+    // Docentes de la carrera propia (Director y Secretario, sin tocar otros roles/carreras)
+    Route::middleware('role:Director,Secretario')->prefix('carrera')->group(function () {
+        Route::get('/docentes', [DocenteCarreraController::class, 'index']);
+        Route::get('/docentes/catalogos', [DocenteCarreraController::class, 'catalogos']);
+        Route::post('/docentes', [DocenteCarreraController::class, 'store']);
+        Route::put('/docentes/{usuario}', [DocenteCarreraController::class, 'update']);
     });
 });

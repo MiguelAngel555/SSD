@@ -6,12 +6,15 @@ export const MENU_POR_ROL = {
       { label: 'Panel de administración', routeName: 'home-administrador' },
       { label: 'Carreras y especialidades', routeName: 'admin-academico' },
       { label: 'Usuarios', routeName: 'admin-usuarios' },
+      { label: 'Asignación de revisores', routeName: 'admin-revisor-asignaciones' },
     ],
   },
   Director: {
     items: [
       { label: 'Panel', routeName: 'home-director' },
       { label: 'Validación de secuencias', routeName: 'secuencias-director' },
+      { label: 'Docentes de mi carrera', routeName: 'director-docentes' },
+      { label: 'Asignación de revisores', routeName: 'director-revisor-asignaciones' },
     ],
   },
   Docente: {
@@ -27,7 +30,11 @@ export const MENU_POR_ROL = {
     ],
   },
   Secretario: {
-    items: [{ label: 'Seguimiento administrativo', routeName: 'home-secretario' }],
+    items: [
+      { label: 'Seguimiento administrativo', routeName: 'home-secretario' },
+      { label: 'Docentes de mi carrera', routeName: 'secretario-docentes' },
+      { label: 'Asignación de revisores', routeName: 'secretario-revisor-asignaciones' },
+    ],
   },
 }
 

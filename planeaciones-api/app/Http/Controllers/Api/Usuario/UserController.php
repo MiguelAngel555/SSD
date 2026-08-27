@@ -28,7 +28,7 @@ class UserController extends Controller
     {
         try {
             $usuarios = User::query()
-                ->with(['roles', 'carreraDirigida', 'asignaturas'])
+                ->with(['roles', 'carreraDirigida', 'carreraSecretariada', 'asignaturas'])
                 ->when($request->filled('q'), function ($query) use ($request) {
                     $q = $request->q;
                     $query->where(fn ($w) => $w->where('nombre', 'like', "%{$q}%")
@@ -65,7 +65,7 @@ class UserController extends Controller
                     ->where('activo', true)
                     ->orderBy('nombre')
                     ->get(['id', 'nombre', 'clave', 'cuatrimestre_id']),
-                'carreras' => Carrera::where('activo', true)->orderBy('nombre')->get(['id', 'nombre', 'clave', 'director_id']),
+                'carreras' => Carrera::where('activo', true)->orderBy('nombre')->get(['id', 'nombre', 'clave', 'director_id', 'secretario_id']),
             ]);
         } catch (Throwable $e) {
             Log::error('UserController@catalogos: error al cargar catálogos', [
@@ -82,7 +82,7 @@ class UserController extends Controller
     public function show(string $id)
     {
         try {
-            $usuario = User::with(['roles', 'carreraDirigida', 'asignaturas'])->findOrFail($id);
+            $usuario = User::with(['roles', 'carreraDirigida', 'carreraSecretariada', 'asignaturas'])->findOrFail($id);
 
             return response()->json($usuario);
         } catch (ModelNotFoundException $e) {
@@ -128,13 +128,17 @@ class UserController extends Controller
                     Carrera::whereKey($data['carrera_id'])->update(['director_id' => $nuevo->id]);
                 }
 
+                if ($nombresRoles->contains('Secretario') && ! empty($data['carrera_id_secretario'])) {
+                    Carrera::whereKey($data['carrera_id_secretario'])->update(['secretario_id' => $nuevo->id]);
+                }
+
                 return $nuevo;
             });
 
             $this->enviarCredenciales($usuario, $passwordTemporal);
 
             return response()->json(
-                $usuario->fresh(['roles', 'carreraDirigida', 'asignaturas']),
+                $usuario->fresh(['roles', 'carreraDirigida', 'carreraSecretariada', 'asignaturas']),
                 201
             );
         } catch (ValidationException $e) {
@@ -186,9 +190,21 @@ class UserController extends Controller
                 if ($nuevaCarreraId) {
                     Carrera::whereKey($nuevaCarreraId)->update(['director_id' => $usuario->id]);
                 }
+
+                // Secretario: mismo manejo que Director, pero sobre secretario_id
+                $carreraSecretariadaActual = $usuario->carreraSecretariada()->first();
+                $nuevaCarreraSecretarioId = $nombresRoles->contains('Secretario') ? ($data['carrera_id_secretario'] ?? null) : null;
+
+                if ($carreraSecretariadaActual && $carreraSecretariadaActual->id !== $nuevaCarreraSecretarioId) {
+                    Carrera::whereKey($carreraSecretariadaActual->id)->update(['secretario_id' => null]);
+                }
+
+                if ($nuevaCarreraSecretarioId) {
+                    Carrera::whereKey($nuevaCarreraSecretarioId)->update(['secretario_id' => $usuario->id]);
+                }
             });
 
-            return response()->json($usuario->fresh(['roles', 'carreraDirigida', 'asignaturas']));
+            return response()->json($usuario->fresh(['roles', 'carreraDirigida', 'carreraSecretariada', 'asignaturas']));
         } catch (ValidationException $e) {
             throw $e;
         } catch (Throwable $e) {
@@ -210,7 +226,7 @@ class UserController extends Controller
         try {
             $usuario->update(['activo' => ! $usuario->activo]);
 
-            return response()->json($usuario->fresh(['roles', 'carreraDirigida', 'asignaturas']));
+            return response()->json($usuario->fresh(['roles', 'carreraDirigida', 'carreraSecretariada', 'asignaturas']));
         } catch (Throwable $e) {
             Log::error('UserController@toggleActivo: error al cambiar el estado del usuario', [
                 'usuario_id' => $usuario->id,
@@ -261,29 +277,43 @@ class UserController extends Controller
             'asignatura_ids' => ['nullable', 'array'],
             'asignatura_ids.*' => ['exists:asignaturas,id'],
             'carrera_id' => ['nullable', 'exists:carreras,id'],
+            'carrera_id_secretario' => ['nullable', 'exists:carreras,id'],
         ]);
     }
 
     /**
      * Reglas de negocio que dependen de los roles seleccionados:
      * - Director solo puede dirigir una carrera, y una carrera solo tiene un director.
+     * - Secretario solo puede estar en una carrera, y una carrera solo tiene un secretario.
      */
     private function validarReglasDeRol($nombresRoles, array $data, ?User $usuarioActual): void
     {
-        if (! $nombresRoles->contains('Director') || empty($data['carrera_id'])) {
-            return;
+        if ($nombresRoles->contains('Director') && ! empty($data['carrera_id'])) {
+            $carrera = Carrera::find($data['carrera_id']);
+
+            $yaTieneOtroDirector = $carrera
+                && $carrera->director_id
+                && $carrera->director_id !== ($usuarioActual?->id);
+
+            if ($yaTieneOtroDirector) {
+                throw ValidationException::withMessages([
+                    'carrera_id' => ['Esa carrera ya tiene un director asignado.'],
+                ]);
+            }
         }
 
-        $carrera = Carrera::find($data['carrera_id']);
+        if ($nombresRoles->contains('Secretario') && ! empty($data['carrera_id_secretario'])) {
+            $carrera = Carrera::find($data['carrera_id_secretario']);
 
-        $yaTieneOtroDirector = $carrera
-            && $carrera->director_id
-            && $carrera->director_id !== ($usuarioActual?->id);
+            $yaTieneOtroSecretario = $carrera
+                && $carrera->secretario_id
+                && $carrera->secretario_id !== ($usuarioActual?->id);
 
-        if ($yaTieneOtroDirector) {
-            throw ValidationException::withMessages([
-                'carrera_id' => ['Esa carrera ya tiene un director asignado.'],
-            ]);
+            if ($yaTieneOtroSecretario) {
+                throw ValidationException::withMessages([
+                    'carrera_id_secretario' => ['Esa carrera ya tiene un secretario asignado.'],
+                ]);
+            }
         }
     }
 

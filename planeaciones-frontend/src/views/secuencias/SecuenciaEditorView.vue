@@ -641,7 +641,7 @@
                   <button v-if="esAutor" class="btn btn-outline btn-page-3d" @click="cancelarEnvio">
                     <Undo2 :size="16" style="margin-right:6px" /> Cancelar envío y editar
                   </button>
-                  <button v-if="puedeValidarElementos" class="btn btn-add-3d flex-1" @click="enviarValidacion">
+                  <button v-if="puedeValidarElementos" class="btn btn-add-3d flex-1" @click="modalEnviarValidacionAbierto = true">
                     <ShieldCheck :size="16" style="margin-right:6px" /> Aprobar y enviar al Director
                   </button>
                   <button v-if="puedeValidarElementos" class="btn btn-danger-3d flex-1" @click="rechazarComoRevisor">
@@ -688,6 +688,9 @@
 
     <EditarGruposAutoresModal v-if="modalGruposAbierto" :secuencia="secuencia" @close="modalGruposAbierto = false"
       @actualizado="onGruposActualizados" />
+
+    <EnviarValidacionModal v-if="modalEnviarValidacionAbierto" :secuencia-id="secuencia.id"
+      @close="modalEnviarValidacionAbierto = false" @enviada="onEnviadaAValidacion" />
   </div>
 </template>
 
@@ -708,6 +711,7 @@ import DocFooter from '@/components/DocFooter.vue'
 import ValidacionElemento from '@/components/ValidacionElemento.vue'
 import IconButton from '@/components/IconButton.vue'
 import EditarGruposAutoresModal from './EditarGruposAutoresModal.vue'
+import EnviarValidacionModal from './EnviarValidacionModal.vue'
 import api from '@/services/api'
 import router from '@/router'
 
@@ -723,6 +727,7 @@ const completitud = ref([])
 const seccion = ref('caratula')
 const gruposAbiertos = reactive({})
 const modalGruposAbierto = ref(false)
+const modalEnviarValidacionAbierto = ref(false)
 const enviando = ref(false)
 const eliminando = ref(false)
 const mensajeAccion = ref(null)
@@ -995,9 +1000,9 @@ async function cancelarEnvio() {
   secuencia.value.estado = data.estado
   await cargar()
 }
-async function enviarValidacion() {
-  const { data } = await api.post(`/revisor/secuencias/${secuencia.value.id}/enviar-validacion`)
+function onEnviadaAValidacion(data) {
   secuencia.value.estado = data.estado
+  modalEnviarValidacionAbierto.value = false
 }
 async function rechazarComoRevisor() {
   if (!confirm('¿Rechazar y devolver esta secuencia al autor para correcciones?')) return

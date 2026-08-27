@@ -1,18 +1,20 @@
 <template>
-  <div class="firma-pad">
+  <div class="firma-pad" :class="{ 'is-disabled': disabled }">
     <canvas
       ref="canvasEl"
       class="firma-canvas"
       width="600"
       height="180"
-      @pointerdown="iniciar"
-      @pointermove="dibujar"
-      @pointerup="terminar"
-      @pointerleave="terminar"
+      @pointerdown="!disabled && iniciar($event)"
+      @pointermove="!disabled && dibujar($event)"
+      @pointerup="!disabled && terminar()"
+      @pointerleave="!disabled && terminar()"
     ></canvas>
     <div class="firma-pad-actions">
-      <span class="sz-xs" style="color:var(--text-300)">Dibuja tu firma con el mouse o el dedo (pantalla táctil).</span>
-      <button type="button" class="btn btn-ghost btn-sm" @click="limpiar">Borrar firma</button>
+      <span class="sz-xs" style="color:var(--text-300)">
+        {{ disabled ? 'Deshabilitado: ya subiste un documento firmado.' : 'Dibuja tu firma con el mouse o el dedo (pantalla táctil).' }}
+      </span>
+      <button type="button" class="btn btn-ghost btn-sm" :disabled="disabled" @click="limpiar">Borrar firma</button>
     </div>
   </div>
 </template>
@@ -20,6 +22,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
+defineProps({ disabled: { type: Boolean, default: false } })
 const emit = defineEmits(['update:modelValue'])
 
 const canvasEl = ref(null)
@@ -82,6 +85,11 @@ defineExpose({ limpiar })
   border-radius: 8px;
   padding: 8px;
   background: #fff;
+}
+
+.firma-pad.is-disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .firma-canvas {

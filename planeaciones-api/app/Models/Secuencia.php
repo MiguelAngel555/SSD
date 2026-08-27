@@ -24,6 +24,9 @@ class Secuencia extends Model
         'fecha_validacion',
         'documento_validacion_url',
         'documento_validacion_origen',
+        'revisor_validacion_id',
+        'revisor_firma_digital',
+        'director_firma_digital',
         'activo',
     ];
 
@@ -49,6 +52,12 @@ class Secuencia extends Model
     public function carrera()
     {
         return $this->belongsTo(Carrera::class);
+    }
+
+    // Revisor cuya firma/nombre aparecen como "PTC que valida" en el formato oficial
+    public function revisorValidacion()
+    {
+        return $this->belongsTo(User::class, 'revisor_validacion_id');
     }
 
     // Autores (docentes) de la secuencia

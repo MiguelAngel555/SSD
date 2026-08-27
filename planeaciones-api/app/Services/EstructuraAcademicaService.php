@@ -766,8 +766,8 @@ class EstructuraAcademicaService
         preg_match_all('/Unidad\s+de\s+Aprendizaje/i', $textoNormalizado, $matchesUnidades);
         $unidades = count($matchesUnidades[0]);
 
-        if ($unidades < 3) {
-            $errores[] = "Se requieren al menos 3 unidades de aprendizaje (encontradas: {$unidades})";
+        if ($unidades < 2) {
+            $errores[] = "Se requieren al menos 2 unidades de aprendizaje (encontradas: {$unidades})";
         } else {
             $detalles['unidades_aprendizaje'] = "{$unidades} unidades encontradas";
         }
