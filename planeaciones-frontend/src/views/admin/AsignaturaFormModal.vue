@@ -78,11 +78,16 @@
         </p>
       </div>
 
-      <!-- Archivo PDF -->
+      <!-- Archivo PDF con Drag & Drop Habilitado -->
       <div class="field">
         <label class="fl">Plan de estudio (Opcional)</label>
 
-        <div class="file-upload-3d" :class="{ 'has-file': archivo || asignatura?.plan_estudio_url }">
+        <div class="file-upload-3d" 
+             :class="{ 'has-file': archivo || asignatura?.plan_estudio_url, 'dragging': arrastrando }"
+             @dragover.prevent="arrastrando = true"
+             @dragleave.prevent="arrastrando = false"
+             @drop.prevent="onArchivoSoltado">
+             
           <input type="file" id="pdf-upload" accept="application/pdf" class="hidden-input"
             @change="onArchivoSeleccionado" />
           <label for="pdf-upload" class="file-label">
@@ -92,11 +97,10 @@
             </div>
             <div class="file-text">
               <span class="file-title">
-                {{ archivo ? archivo.name : (asignatura?.plan_estudio_url ? 'PDF actual cargado' : 'Subir archivo PDF')
-                }}
+                {{ archivo ? archivo.name : (asignatura?.plan_estudio_url ? 'PDF actual cargado' : 'Sube o arrastra tu archivo PDF') }}
               </span>
               <span class="file-desc">
-                {{ archivo || asignatura?.plan_estudio_url ? 'Clic para reemplazar' : 'Se validará su estructura automáticamente' }}
+                {{ archivo || asignatura?.plan_estudio_url ? 'Clic o suelta aquí para reemplazar' : 'Se validará su estructura automáticamente' }}
               </span>
             </div>
           </label>
@@ -187,6 +191,7 @@ const form = reactive({
   especialidad_ids: props.asignatura?.especialidades?.map((e) => e.id) ?? [],
 })
 const archivo = ref(null)
+const arrastrando = ref(false) // Controla el estado visual al arrastrar
 
 const guardando = ref(false)
 const erroresForm = ref([])
@@ -195,6 +200,20 @@ const duplicadoInfo = ref(null)
 
 function onArchivoSeleccionado(event) {
   archivo.value = event.target.files[0] ?? null
+}
+
+// Función para manejar cuando sueltan un archivo mediante Drag & Drop
+function onArchivoSoltado(event) {
+  arrastrando.value = false
+  const files = event.dataTransfer?.files
+  if (files && files.length > 0) {
+    const file = files[0]
+    if (file.type === 'application/pdf') {
+      archivo.value = file
+    } else {
+      alert('Por favor, selecciona un archivo PDF válido.')
+    }
+  }
 }
 
 function construirFormData(forzar = false) {
@@ -479,7 +498,7 @@ async function vincularExistente() {
   color: var(--text-400);
 }
 
-/* ── File Upload 3D ── */
+/* ── File Upload 3D con Drag & Drop ── */
 .file-upload-3d {
   position: relative;
   border: 2px dashed var(--border);
@@ -491,6 +510,13 @@ async function vincularExistente() {
 .file-upload-3d:hover {
   border-color: var(--uth-verde-claro);
   background: rgba(0, 182, 79, 0.02);
+}
+
+/* Efecto visual cuando arrastras un archivo por encima */
+.file-upload-3d.dragging {
+  border-color: var(--uth-verde);
+  background: rgba(0, 182, 79, 0.08);
+  transform: scale(1.01);
 }
 
 .file-upload-3d.has-file {
@@ -554,7 +580,6 @@ async function vincularExistente() {
 /* ── Estilos Tarjeta Duplicado ── */
 .widget-contorno {
   border: 2px solid rgba(217, 119, 6, 0.3);
-  /* Naranja/Ambar suave */
   border-radius: var(--r-lg);
   box-shadow: 0 8px 20px rgba(217, 119, 6, 0.08);
 }
